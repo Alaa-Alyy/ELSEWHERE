@@ -32,9 +32,13 @@ DEFAULT_ORIGINS = "http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:
 
 # Chat providers reachable through the official OpenAI SDK (Gemini exposes an OpenAI-compatible endpoint).
 PROVIDERS = {
-    "openai": {"base_url": None, "default_model": "gpt-4.1-mini", "key_env": "OPENAI_API_KEY"},
+    "openai": {"base_url": None, "default_model": "gpt-4.1-mini", "fallback_model": None,
+               "key_env": "OPENAI_API_KEY"},
+    # Verified 2026-11-14 with an AI Studio key: gemini-2.5-flash is closed to new keys; 3.8-flash and
+    # flash-latest returned 503/timeouts under load; 3.1-flash-lite answered grounded JSON in ~2.5 s.
     "gemini": {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-               "default_model": "gemini-2.5-flash", "key_env": "GEMINI_API_KEY"},
+               "default_model": "gemini-3.1-flash-lite", "fallback_model": "gemini-3-flash-preview",
+               "key_env": "GEMINI_API_KEY"},
 }
 
 
@@ -48,6 +52,7 @@ class Settings:
     openai_model: str = "gpt-4.1-mini"  # model for the selected provider
     llm_provider: str = "openai"
     llm_base_url: str | None = None
+    llm_fallback_model: str | None = None  # one bounded retry on upstream 5xx/timeout
     chat_timeout_seconds: float = 25.0
     chat_rate_limit_per_minute: int = 20
 
@@ -67,6 +72,7 @@ class Settings:
         return cls(
             llm_provider=provider,
             llm_base_url=p["base_url"],
+            llm_fallback_model=(e.get("LLM_FALLBACK_MODEL", p["fallback_model"] or "") or None),
             demo_fixtures=_bool(e.get("DEMO_FIXTURES"), False),
             data_dir=_path(e.get("DATA_DIR"), REPO_ROOT / "data" / "processed"),
             sources_dir=_path(e.get("SOURCES_DIR"), REPO_ROOT / "data" / "sources"),

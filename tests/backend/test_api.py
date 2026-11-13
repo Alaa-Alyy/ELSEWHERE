@@ -183,6 +183,25 @@ def test_chat_upstream_failure_and_bad_output(ranking):
         assert r.status_code == 503 and r.json()["error"]["retryable"] is True
 
 
+def test_chat_uses_strict_schema_and_one_fallback(ranking):
+    class Flaky(FakeChatClient):
+        """First call times out (primary model overloaded), second call answers."""
+
+        def _create(self, **kw):
+            if not self.calls:
+                self.calls.append(kw)
+                raise TimeoutError("primary overloaded")
+            return super()._create(**kw)
+
+    fake = Flaky('{"answer":"ok","candidate_ids":[],"source_ids":[],"limitations":[]}')
+    c = TestClient(create_app(demo_settings(llm_fallback_model="backup-model"), chat_client=fake))
+    r = _chat(c, ranking)
+    assert r.status_code == 200, r.text
+    assert [k["model"] for k in fake.calls] == ["gpt-4.1-mini", "backup-model"]
+    assert fake.calls[0]["response_format"]["type"] == "json_schema"
+    assert fake.calls[0]["timeout"] + fake.calls[1]["timeout"] <= 25.0
+
+
 def test_chat_input_limits(ranking):
     c = TestClient(create_app(demo_settings(), chat_client=FakeChatClient('{"answer":"ok"}')))
     assert _chat(c, ranking, message="x" * 2001).status_code == 422

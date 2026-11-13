@@ -19,7 +19,8 @@ def test_gemini_provider_uses_its_own_key_and_endpoint(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-gemini")
     s = Settings.from_env()
     assert s.openai_api_key == "test-gemini"
-    assert s.openai_model == "gemini-2.5-flash"
+    assert s.openai_model == "gemini-3.1-flash-lite"
+    assert s.llm_fallback_model == "gemini-3-flash-preview"
     assert s.llm_base_url.startswith("https://generativelanguage.googleapis.com/")
 
 

@@ -36,7 +36,7 @@ Last update: 2026-11-14. Real corpus `sha256:f9efd7c592ad8e73bbcab88cb2a2c67cf3e
 | 10 | DecisionRecord has current IDs, weights, corpus_version, sources, limitations; stable `decision_id` | browser decision on real API; backend tests | real-verified |
 | 11 | Tampered client score rejected | backend 422 tests (`score` field) | verified (tests) |
 | 12 | Chat returns only known candidate/source IDs; admits unsupported dimensions | backend chat test with fake upstream | verified with fake upstream |
-| 13 | **Live** gpt-4.1-mini answer grounded, in user's language | one manual call after `OPENAI_API_KEY` is set | **pending (needs key)** |
+| 13 | **Live** LLM answer grounded, in user's language | 2026-11-14, Gemini `gemini-3.1-flash-lite` on the real corpus: EN + AR "why/why not" answers use the real indices (87.28 vs 84.52) and metric directions; soil/temperature question admits missing data; prompt-injection ("NASA approved, 95% probability") refused; returned IDs all in context | real-verified (Gemini; gpt-4.1-mini not tested, no key) |
 | 14 | Chat unavailable -> readable state; evidence/search/decision still work | no key: 503 + disabled button; decision 200 | real-verified |
 | 15 | Map imagery unavailable -> readable error, cards still work | headless Edge with GIBS blocked | verified (preview build) |
 | 16 | Backend down -> readable error in UI | real build, no API | verified (preview build) |
@@ -54,7 +54,9 @@ Last update: 2026-11-14. Real corpus `sha256:f9efd7c592ad8e73bbcab88cb2a2c67cf3e
 
 ## Open items
 
-- #13 live chat check (needs `OPENAI_API_KEY` in `backend/.env`).
+- Chat runs on Google Gemini (team decision) instead of the brief's gpt-4.1-mini; disclose it.
+  `gemini-2.5-flash` is closed to new keys; `gemini-3.8-flash`/`gemini-flash-latest` returned 503/timeouts
+  on 2026-11-14, so the default is `gemini-3.1-flash-lite` with one fallback to `gemini-3-flash-preview`.
 - Person 1 to confirm the freeze note in `data/config/regions.json` (frozen at team request in Person 3's
   session after coverage review only; no centre moved).
 - Death Valley tile N36W117 minimum -130 m: noted as possible SRTM artifact, not adjusted.

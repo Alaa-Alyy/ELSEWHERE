@@ -15,6 +15,26 @@ from .search_adapter import SearchAdapter, UnknownIdError
 log = logging.getLogger("missionmatch.chat")
 
 
+ANSWER_SCHEMA = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "missionmatch_chat_answer",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["answer", "candidate_ids", "source_ids", "limitations"],
+            "properties": {
+                "answer": {"type": "string"},
+                "candidate_ids": {"type": "array", "items": {"type": "string"}},
+                "source_ids": {"type": "array", "items": {"type": "string"}},
+                "limitations": {"type": "array", "items": {"type": "string"}},
+            },
+        },
+    },
+}
+
+
 class ChatUnavailable(Exception):
     def __init__(self, message: str, retryable: bool = True):
         super().__init__(message)
@@ -111,14 +131,23 @@ class ChatService:
         for turn in req.history[-6:]:
             messages.append({"role": turn.role, "content": turn.content[:2000]})
         messages.append({"role": "user", "content": req.message})
-        try:
-            resp = self._client.chat.completions.create(
-                model=self.settings.openai_model, messages=messages, temperature=0.2, max_tokens=700,
-                response_format={"type": "json_object"}, timeout=self.settings.chat_timeout_seconds,
-            )
-            raw = resp.choices[0].message.content or ""
-        except Exception as exc:
-            log.warning("chat upstream failed: %s", type(exc).__name__)
+        models = [self.settings.openai_model]
+        if self.settings.llm_fallback_model and self.settings.llm_fallback_model not in models:
+            models.append(self.settings.llm_fallback_model)  # bounded: at most one retry
+        raw = None
+        per_call_timeout = self.settings.chat_timeout_seconds / len(models)  # total stays within budget
+        for model in models:
+            try:
+                resp = self._client.chat.completions.create(
+                    # generous budget: reasoning models spend tokens before the visible JSON answer
+                    model=model, messages=messages, temperature=0.2, max_tokens=2500,
+                    response_format=ANSWER_SCHEMA, timeout=per_call_timeout,
+                )
+                raw = resp.choices[0].message.content or ""
+                break
+            except Exception as exc:
+                log.warning("chat upstream failed on %s: %s", model, type(exc).__name__)
+        if raw is None:
             raise ChatUnavailable("The explanation assistant is temporarily unavailable. Evidence and decision still work.")
         try:
             data = json.loads(raw)

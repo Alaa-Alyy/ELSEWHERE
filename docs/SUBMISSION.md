@@ -48,8 +48,8 @@ reproducible Mission Decision Brief.
 ## AI disclosure
 
 - In the product: one LLM generates optional explanations from server-side measured evidence. The brief's
-  default is OpenAI gpt-4.1-mini; the team may run Google Gemini (`LLM_PROVIDER=gemini`, e.g.
-  gemini-2.5-flash) instead. **State the provider/model actually used in the demo** (shown in
+  default is OpenAI gpt-4.1-mini; the team ran Google Gemini (`LLM_PROVIDER=gemini`,
+  `gemini-3.1-flash-lite`, fallback `gemini-3-flash-preview`) through Gemini's OpenAI-compatible API. **State the provider/model actually used in the demo** (shown in
   `/api/health` `chat_model`). The model does not compute features, scores or rankings. The decision brief
   is deterministic and works without it.
 - In development: the team used AI coding assistants (including Anthropic Claude) to draft code, tests and
