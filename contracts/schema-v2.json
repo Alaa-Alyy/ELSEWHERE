@@ -123,6 +123,9 @@
       "required": ["message", "reference_id", "profile"],
       "properties": {
         "message": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "reference_id": { "type": "string" }, "profile": { "enum": ["terrain_general", "slope_focus"] },
+        "slope_weight": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "selected_candidate_id": { "type": ["string", "null"] }, "alternative_candidate_id": { "type": ["string", "null"] },
         "history": { "type": "array", "maxItems": 6, "items": { "type": "object", "required": ["role", "content"],
           "properties": { "role": { "enum": ["user", "assistant"] } } } }
       }
