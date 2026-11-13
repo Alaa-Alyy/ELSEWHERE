@@ -1,0 +1,85 @@
+{
+  "schema_version": "2.0",
+  "pipeline_version": "2.0",
+  "region_id": "mars-jezero",
+  "kind": "reference",
+  "body": "mars",
+  "is_demo": true,
+  "center": {
+    "lat": 18.44,
+    "lon": 77.45
+  },
+  "center_status": "provisional",
+  "inputs": [],
+  "input_spec": null,
+  "native_read": null,
+  "body_figure": "IAU Mars sphere R=3396.19 km (MOLA reference sphere)",
+  "analysis_crs_wkt": "PROJCRS[\"unknown\",BASEGEOGCRS[\"unknown\",DATUM[\"unknown\",ELLIPSOID[\"unknown\",3396190,0,LENGTHUNIT[\"metre\",1,ID[\"EPSG\",9001]]]],PRIMEM[\"Reference meridian\",0,ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]]],CONVERSION[\"unknown\",METHOD[\"Azimuthal Equidistant\",ID[\"EPSG\",1125]],PARAMETER[\"Latitude of natural origin\",18.44,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8801]],PARAMETER[\"Longitude of natural origin\",77.45,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8802]],PARAMETER[\"False easting\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"(E)\",east,ORDER[1],LENGTHUNIT[\"metre\",1,ID[\"EPSG\",9001]]],AXIS[\"(N)\",north,ORDER[2],LENGTHUNIT[\"metre\",1,ID[\"EPSG\",9001]]]]",
+  "analysis_crs_proj4": "+proj=aeqd +lat_0=18.44 +lon_0=77.45 +x_0=0 +y_0=0 +R=3396190 +units=m +no_defs +type=crs",
+  "resampling": "area average by source-pixel-centre binning into 1000 m cells; cell valid if valid samples >= 0.5 x nominal",
+  "buffer_cells": 2,
+  "grid_cells": 24,
+  "regrid_stats": {
+    "note": "synthetic demo grid; no source data"
+  },
+  "window": {
+    "valid_cells": 400,
+    "valid_fraction": 1.0,
+    "reasons": [],
+    "status": "valid",
+    "metrics": {
+      "slope_histogram": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "relief_p95_p05_m": 53.36731657354534,
+      "local_variation_m": 0.5094353526980058
+    }
+  },
+  "settings": {
+    "schema_version": "2.0",
+    "pipeline_version": "2.0",
+    "score_version": "2.0",
+    "resolution_m": 1000.0,
+    "parent_size_cells": 100,
+    "window_size_cells": 20,
+    "stride_cells": 10,
+    "buffer_cells": 2,
+    "min_cell_sample_fraction": 0.5,
+    "slope_bin_edges_deg": [
+      0.0,
+      1.0,
+      3.0,
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      45.0,
+      90.0
+    ],
+    "percentile_method": "linear",
+    "min_valid_fraction": 0.95,
+    "min_valid_cells": 100,
+    "max_exact_zero_fraction": 0.05,
+    "profiles": {
+      "terrain_general": 0.4,
+      "slope_focus": 0.7
+    },
+    "stabilization_floor_m": 1.0,
+    "min_center_distance_km": 20.0
+  },
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1",
+    "pyproj": "3.8.0"
+  }
+}

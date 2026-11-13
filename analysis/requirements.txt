@@ -1,0 +1,9 @@
+# Person 1 analysis pipeline. Verified 2026-11-13 on Windows, Python 3.12.10.
+numpy>=2.0
+scipy>=1.13
+scikit-learn>=1.5
+pyproj>=3.6
+rasterio>=1.4        # GeoTIFF reads (GDAL 3.12.2 verified); optional: tifffile fallback below
+tifffile>=2025.1,<2026.11   # pure-Python GeoTIFF fallback if rasterio's GDAL DLL is blocked
+pillow>=10.0
+pytest>=8.0
