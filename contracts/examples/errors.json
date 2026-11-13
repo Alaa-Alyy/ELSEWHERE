@@ -1,0 +1,23 @@
+{
+  "404": {
+    "error": {
+      "code": "not_found",
+      "message": "unknown candidate_id 'earth-khaybar-r99-c99'",
+      "retryable": false
+    }
+  },
+  "422": {
+    "error": {
+      "code": "invalid_input",
+      "message": "unknown profile 'bad'; expected one of ['slope_focus', 'terrain_general']",
+      "retryable": false
+    }
+  },
+  "503_chat": {
+    "error": {
+      "code": "chat_unavailable",
+      "message": "The explanation assistant is not configured on this server.",
+      "retryable": false
+    }
+  }
+}

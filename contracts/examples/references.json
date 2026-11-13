@@ -1,0 +1,247 @@
+{
+  "schema_version": "2.0",
+  "items": [
+    {
+      "schema_version": "2.0",
+      "id": "moon-south-pole-sector",
+      "body": "moon",
+      "kind": "reference",
+      "name": "[DEMO] Lunar south polar terrain sector",
+      "center": {
+        "lat": -85.0,
+        "lon": 0.0
+      },
+      "footprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -3.5457651,
+              -84.6600543
+            ],
+            [
+              -3.6583567,
+              -84.8246198
+            ],
+            [
+              -3.7783434,
+              -84.989164
+            ],
+            [
+              -3.9064772,
+              -85.1536847
+            ],
+            [
+              -4.0436157,
+              -85.3181795
+            ],
+            [
+              -2.0243106,
+              -85.3268763
+            ],
+            [
+              0.0,
+              -85.3297789
+            ],
+            [
+              2.0243106,
+              -85.3268763
+            ],
+            [
+              4.0436157,
+              -85.3181795
+            ],
+            [
+              3.9064772,
+              -85.1536847
+            ],
+            [
+              3.7783434,
+              -84.989164
+            ],
+            [
+              3.6583567,
+              -84.8246198
+            ],
+            [
+              3.5457651,
+              -84.6600543
+            ],
+            [
+              1.7745678,
+              -84.6676776
+            ],
+            [
+              0.0,
+              -84.6702211
+            ],
+            [
+              -1.7745678,
+              -84.6676776
+            ],
+            [
+              -3.5457651,
+              -84.6600543
+            ]
+          ]
+        ],
+        "crs_note": "Moon planetocentric latitude, east-positive longitude on IAU Moon sphere R=1737.4 km (LOLA reference radius); [lon, lat] order; NOT Earth WGS84 - never draw on Earth"
+      },
+      "coordinate_convention": "Moon planetocentric latitude, east-positive longitude on IAU Moon sphere R=1737.4 km (LOLA reference radius); [lon, lat] order; NOT Earth WGS84 - never draw on Earth",
+      "source_ids": [
+        "demo-synthetic-moon-south-pole-sector"
+      ],
+      "preview_url": "/assets/previews/moon-south-pole-sector.png",
+      "limitations": [
+        "Kilometre-scale (1000 m) regional terrain statistics only; not obstacle, rock or soil-scale roughness.",
+        "Terrain data do not establish gravity, vacuum/atmosphere, radiation, temperature, illumination, regolith properties or ice.",
+        "Prototype comparison sector, not an officially selected lunar-base location.",
+        "Terrain only: illumination, temperature and ice are not represented."
+      ],
+      "analysis": {
+        "pipeline_version": "2.0",
+        "resolution_m": 1000,
+        "window_size_km": 20.0,
+        "valid_fraction": 1.0,
+        "status": "valid",
+        "is_demo": true,
+        "reasons": []
+      },
+      "metrics": {
+        "slope_histogram": [
+          0.0225,
+          0.205,
+          0.2325,
+          0.4525,
+          0.0875,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "relief_p95_p05_m": 1250.1092399982317,
+        "local_variation_m": 24.643807394854207
+      }
+    },
+    {
+      "schema_version": "2.0",
+      "id": "mars-jezero",
+      "body": "mars",
+      "kind": "reference",
+      "name": "[DEMO] Jezero regional terrain window",
+      "center": {
+        "lat": 18.44,
+        "lon": 77.45
+      },
+      "footprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.2719878,
+              18.6086229
+            ],
+            [
+              77.2720756,
+              18.52427
+            ],
+            [
+              77.272163,
+              18.4399172
+            ],
+            [
+              77.2722502,
+              18.3555643
+            ],
+            [
+              77.272337,
+              18.2712115
+            ],
+            [
+              77.3611685,
+              18.2712733
+            ],
+            [
+              77.45,
+              18.271294
+            ],
+            [
+              77.5388315,
+              18.2712733
+            ],
+            [
+              77.627663,
+              18.2712115
+            ],
+            [
+              77.6277498,
+              18.3555643
+            ],
+            [
+              77.627837,
+              18.4399172
+            ],
+            [
+              77.6279244,
+              18.52427
+            ],
+            [
+              77.6280122,
+              18.6086229
+            ],
+            [
+              77.5390061,
+              18.6086853
+            ],
+            [
+              77.45,
+              18.608706
+            ],
+            [
+              77.3609939,
+              18.6086853
+            ],
+            [
+              77.2719878,
+              18.6086229
+            ]
+          ]
+        ],
+        "crs_note": "Mars planetocentric latitude, east-positive longitude on IAU Mars sphere R=3396.19 km (MOLA reference sphere); [lon, lat] order; NOT Earth WGS84 - never draw on Earth"
+      },
+      "coordinate_convention": "Mars planetocentric latitude, east-positive longitude on IAU Mars sphere R=3396.19 km (MOLA reference sphere); [lon, lat] order; NOT Earth WGS84 - never draw on Earth",
+      "source_ids": [
+        "demo-synthetic-mars-jezero"
+      ],
+      "preview_url": "/assets/previews/mars-jezero.png",
+      "limitations": [
+        "Kilometre-scale (1000 m) regional terrain statistics only; not obstacle, rock or soil-scale roughness.",
+        "Terrain data do not establish gravity, vacuum/atmosphere, radiation, temperature, illumination, regolith properties or ice.",
+        "Regional terrain reference at ~463 m native / 1000 m analysis scale; not a landing-safety or rover-navigation product.",
+        "Center is a planning seed, not a validated scientific claim."
+      ],
+      "analysis": {
+        "pipeline_version": "2.0",
+        "resolution_m": 1000,
+        "window_size_km": 20.0,
+        "valid_fraction": 1.0,
+        "status": "valid",
+        "is_demo": true,
+        "reasons": []
+      },
+      "metrics": {
+        "slope_histogram": [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "relief_p95_p05_m": 53.36731657354534,
+        "local_variation_m": 0.5094353526980058
+      }
+    }
+  ]
+}

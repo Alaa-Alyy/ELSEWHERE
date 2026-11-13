@@ -1,0 +1,13 @@
+{
+  "answer": "(illustrative shape only) The selected window is closer on slope distribution; relief is a tie at display precision.",
+  "candidate_ids": [
+    "earth-pinacate-r02-c05",
+    "earth-pinacate-r04-c03"
+  ],
+  "source_ids": [
+    "demo-synthetic-mars-jezero"
+  ],
+  "limitations": [
+    "Terrain data cannot establish soil or temperature."
+  ]
+}

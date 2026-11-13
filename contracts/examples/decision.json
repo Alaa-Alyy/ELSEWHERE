@@ -1,0 +1,136 @@
+{
+  "schema_version": "2.0",
+  "reference_id": "mars-jezero",
+  "profile": "terrain_general",
+  "selected_candidate_id": "earth-pinacate-r02-c05",
+  "alternative_candidate_id": "earth-pinacate-r04-c03",
+  "weights": {
+    "slope": 0.4,
+    "relief": 0.3,
+    "variation": 0.3
+  },
+  "pipeline_version": "2.0",
+  "score_version": "2.0",
+  "corpus_version": "sha256:a108f5a6a33f314f950b6e8fb6aabb97f138cf3fbe85340a848e23c56614774e",
+  "evidence": [
+    {
+      "metric": "slope_histogram",
+      "units": "probability per bin; bins deg [0.0, 1.0, 3.0, 5.0, 10.0, 20.0, 30.0, 45.0, 90.0]",
+      "target_value": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "selected_value": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "distance": 0.0,
+      "weight": 0.4,
+      "contribution": 0.0
+    },
+    {
+      "metric": "relief_p95_p05_m",
+      "units": "m",
+      "target_value": 53.36731657354534,
+      "selected_value": 52.04479576671815,
+      "distance": 0.024781474725352238,
+      "weight": 0.3,
+      "contribution": 0.007434442417605671
+    },
+    {
+      "metric": "local_variation_m",
+      "units": "m",
+      "target_value": 0.5094353526980058,
+      "selected_value": 0.3099016209794172,
+      "distance": 0.19953373171858857,
+      "weight": 0.3,
+      "contribution": 0.05986011951557657
+    }
+  ],
+  "tradeoffs": [
+    {
+      "metric": "slope_histogram",
+      "weight": 0.4,
+      "selected_distance": 0.0,
+      "alternative_distance": 0.012499999999999978,
+      "selected_contribution": 0.0,
+      "alternative_contribution": 0.004999999999999991,
+      "contribution_difference": -0.004999999999999991,
+      "closer": "selected"
+    },
+    {
+      "metric": "relief_p95_p05_m",
+      "weight": 0.3,
+      "selected_distance": 0.024781474725352238,
+      "alternative_distance": 0.017908788751143108,
+      "selected_contribution": 0.007434442417605671,
+      "alternative_contribution": 0.005372636625342932,
+      "contribution_difference": 0.002061805792262739,
+      "closer": "alternative"
+    },
+    {
+      "metric": "local_variation_m",
+      "weight": 0.3,
+      "selected_distance": 0.19953373171858857,
+      "alternative_distance": 0.1964633841383261,
+      "selected_contribution": 0.05986011951557657,
+      "alternative_contribution": 0.058939015241497826,
+      "contribution_difference": 0.0009211042740787448,
+      "closer": "alternative"
+    }
+  ],
+  "limitations": [
+    "DEMO FIXTURE decision: synthetic values, not a scientific result.",
+    "Terrain elevation only: soil/regolith properties, temperature, illumination, water/ice, biology, gravity, radiation, atmosphere, site access and permits are not established by this analysis.",
+    "Statistics are computed at 1000 m resolution over 20 km windows; small obstacles, rocks and metre-scale slopes are not represented.",
+    "Result is the closest available window within a limited corpus of 3 Earth parent regions, not a global best analog and not a safe-route or landing assessment.",
+    "Heuristic terrain similarity index; not a probability and not field validation.",
+    "Kilometre-scale (1000 m) regional terrain statistics only; not obstacle, rock or soil-scale roughness.",
+    "Terrain data do not establish gravity, vacuum/atmosphere, radiation, temperature, illumination, regolith properties or ice.",
+    "Regional terrain reference at ~463 m native / 1000 m analysis scale; not a landing-safety or rover-navigation product.",
+    "Center is a planning seed, not a validated scientific claim.",
+    "Closest available window within a limited 3-parent corpus, not a global best or validated analog.",
+    "Kilometre-scale (1000 m) terrain statistics only; local variation is not rock/grain roughness.",
+    "Overlapping windows are correlated samples, not independent observations.",
+    "Soil, temperature, biology, gravity, radiation, access and permits are not established by terrain data.",
+    "Not a rover-safe route or landing-safety assessment; field suitability is unknown."
+  ],
+  "proposed_test": {
+    "title": "Regional terrain-planning diversity comparison",
+    "summary": "Proposed, not executed: run the same traverse-planning and scheduling exercise in the selected window and in the alternative, and compare how the kilometre-scale slope distribution, relief and local height variation change the plans relative to the reference.",
+    "steps": [
+      "Confirm access, permits and safety for the selected window.",
+      "Survey metre-scale slopes and obstacles on site; the 1000 m analysis cannot see them.",
+      "Run identical planning exercises in both windows and record the differences."
+    ],
+    "requires_field_validation": true
+  },
+  "source_ids": [
+    "demo-synthetic-mars-jezero",
+    "demo-synthetic-earth-pinacate"
+  ],
+  "search_scope": {
+    "parents": 3,
+    "planned_windows": 243,
+    "valid_windows": 232
+  },
+  "selected_score": 93.27054380668177,
+  "alternative_score": 93.06883481331593,
+  "selected_corpus_rank": 1,
+  "overall_closer": "selected",
+  "is_demo": true,
+  "decision_id": "sha256:330a8a148189077d80034cf8bc28f1c0b65cf62b55c8feed7bf033f045c09d6e",
+  "generated_at_utc": "2026-11-13T21:37:52Z"
+}

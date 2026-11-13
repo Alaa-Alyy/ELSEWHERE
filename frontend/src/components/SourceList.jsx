@@ -12,7 +12,7 @@ export default function SourceList({ ids = [], sources = [], title = 'Sources' }
             <li key={id}>
               {safe
                 ? <a href={s.landing_url} target="_blank" rel="noopener noreferrer">{s.title}</a>
-                : <span>{id} (not in source registry)</span>}
+                : s ? <span>{s.title}</span> : <span>{id} (not in source registry)</span>}
               {s && <span className="muted"> - {s.agency}, {s.product} v{s.version}</span>}
             </li>
           );

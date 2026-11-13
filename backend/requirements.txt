@@ -1,0 +1,9 @@
+# MissionMatch backend (Person 2). Verified 2026-11-13 on Windows, Python 3.12.10.
+# Also needs Person 1's analysis package: pip install -r analysis/requirements.txt
+fastapi==0.162.7
+uvicorn[standard]>=0.30
+pydantic==2.14.3
+openai==3.50.0
+python-dotenv>=1.0
+httpx>=0.27          # FastAPI TestClient
+pytest>=8.0

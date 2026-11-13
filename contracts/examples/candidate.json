@@ -1,0 +1,155 @@
+{
+  "schema_version": "2.0",
+  "item": {
+    "schema_version": "2.0",
+    "id": "earth-pinacate-r02-c05",
+    "body": "earth",
+    "kind": "candidate",
+    "parent_id": "earth-pinacate",
+    "name": "[DEMO] El Pinacate window r02-c05",
+    "center": {
+      "lat": 31.9503242,
+      "lon": -113.3942294
+    },
+    "footprint": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -113.5,
+            32.0405502
+          ],
+          [
+            -113.5,
+            31.9954593
+          ],
+          [
+            -113.5,
+            31.9503681
+          ],
+          [
+            -113.5,
+            31.9052765
+          ],
+          [
+            -113.5,
+            31.8601847
+          ],
+          [
+            -113.4471661,
+            31.8601737
+          ],
+          [
+            -113.3943323,
+            31.8601409
+          ],
+          [
+            -113.3414985,
+            31.8600861
+          ],
+          [
+            -113.2886648,
+            31.8600094
+          ],
+          [
+            -113.288562,
+            31.9051011
+          ],
+          [
+            -113.2884589,
+            31.9501925
+          ],
+          [
+            -113.2883557,
+            31.9952835
+          ],
+          [
+            -113.2882522,
+            32.0403743
+          ],
+          [
+            -113.3411891,
+            32.0404512
+          ],
+          [
+            -113.394126,
+            32.0405062
+          ],
+          [
+            -113.447063,
+            32.0405392
+          ],
+          [
+            -113.5,
+            32.0405502
+          ]
+        ]
+      ]
+    },
+    "coordinate_convention": "WGS84 geographic (EPSG:4326); GeoJSON [longitude, latitude]",
+    "source_ids": [
+      "demo-synthetic-earth-pinacate"
+    ],
+    "preview_url": "/assets/previews/earth-pinacate-r02-c05.png",
+    "limitations": [
+      "Closest available window within a limited 3-parent corpus, not a global best or validated analog.",
+      "Kilometre-scale (1000 m) terrain statistics only; local variation is not rock/grain roughness.",
+      "Overlapping windows are correlated samples, not independent observations.",
+      "Soil, temperature, biology, gravity, radiation, access and permits are not established by terrain data.",
+      "Not a rover-safe route or landing-safety assessment; field suitability is unknown."
+    ],
+    "analysis": {
+      "pipeline_version": "2.0",
+      "resolution_m": 1000,
+      "window_size_km": 20.0,
+      "valid_fraction": 0.97,
+      "status": "valid",
+      "is_demo": true,
+      "reasons": []
+    },
+    "metrics": {
+      "slope_histogram": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "relief_p95_p05_m": 52.04479576671815,
+      "local_variation_m": 0.3099016209794172
+    },
+    "grid": {
+      "row": 2,
+      "col": 5,
+      "row_offset_cells": 20,
+      "col_offset_cells": 50,
+      "center_local_m": [
+        10000.0,
+        20000.0
+      ],
+      "analysis_crs": "+proj=aeqd +lat_0=31.77 +lon_0=-113.5 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs +type=crs"
+    }
+  },
+  "sources": [
+    {
+      "id": "demo-synthetic-earth-pinacate",
+      "title": "DEMO synthetic fixture (demo-synthetic-earth-pinacate) - not a real data source",
+      "agency": "MissionMatch demo",
+      "product": "synthetic",
+      "version": "demo",
+      "landing_url": null,
+      "download_url": null,
+      "downloaded_at_utc": "unknown",
+      "filename": "unknown",
+      "sha256": "unknown",
+      "units": "unknown",
+      "native_resolution": "unknown",
+      "native_crs_wkt": "unknown",
+      "citation": "unknown",
+      "license_or_usage_notes": "Synthetic interface-test data; not a measurement."
+    }
+  ]
+}
