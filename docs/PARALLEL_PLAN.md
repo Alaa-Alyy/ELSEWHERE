@@ -55,7 +55,11 @@ P3: MOLA crop -> handoff --+   story/globe on fixtures -> real UI ----+
    `false` talks to the API. A DEMO banner shows whenever any record is `is_demo`.
 4. Real-data claims require `/api/health` `data_ready=true` and `python scripts/contract_check.py` = PASS.
 
-## Timeline and status (2026-11-13)
+## Timeline and status (updated 2026-11-14)
+
+**Real corpus built and validated** (`corpus_version sha256:f9efd7c5...`, 232/243 valid, regions frozen).
+Remaining: live chat check with `OPENAI_API_KEY`, rehearsal, backup video, submission.
+
 
 | When | Deliverable | Status |
 |---|---|---|

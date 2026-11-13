@@ -1,0 +1,75 @@
+{
+  "schema_version": "2.0",
+  "pipeline_version": "2.0",
+  "score_version": "2.0",
+  "corpus_version": "sha256:f9efd7c592ad8e73bbcab88cb2a2c67cf3ecbfa604e00c7b18f68dea0f22ac7e",
+  "is_demo": false,
+  "generated_at_utc": "2026-11-13T22:03:51+00:00",
+  "parents": [
+    "earth-khaybar",
+    "earth-pinacate",
+    "earth-death-valley"
+  ],
+  "planned_windows": 243,
+  "valid_windows": 232,
+  "rejected_windows": 11,
+  "references": {
+    "moon-south-pole-sector": "valid",
+    "mars-jezero": "valid"
+  },
+  "distance": {
+    "vector": "[8 slope-histogram probabilities, relief_p95_p05_m, local_variation_m]",
+    "d_slope": "0.5*sum|p_i-q_i|",
+    "d_relief": "|r_e-r_t|/max(|r_e|,|r_t|,1.0)",
+    "d_variation": "|v_e-v_t|/max(|v_e|,|v_t|,1.0)",
+    "D": "w*d_slope + ((1-w)/2)*(d_relief+d_variation)",
+    "score": "100*(1-D)",
+    "profiles": {
+      "terrain_general": 0.4,
+      "slope_focus": 0.7
+    },
+    "retrieval": "sklearn NearestNeighbors(algorithm='brute', metric=callable)",
+    "diversity": "greedy, geodesic WGS84 centre separation >= 20.0 km"
+  },
+  "settings": {
+    "schema_version": "2.0",
+    "pipeline_version": "2.0",
+    "score_version": "2.0",
+    "resolution_m": 1000.0,
+    "parent_size_cells": 100,
+    "window_size_cells": 20,
+    "stride_cells": 10,
+    "buffer_cells": 2,
+    "min_cell_sample_fraction": 0.5,
+    "slope_bin_edges_deg": [
+      0.0,
+      1.0,
+      3.0,
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      45.0,
+      90.0
+    ],
+    "percentile_method": "linear",
+    "min_valid_fraction": 0.95,
+    "min_valid_cells": 100,
+    "max_exact_zero_fraction": 0.05,
+    "profiles": {
+      "terrain_general": 0.4,
+      "slope_focus": 0.7
+    },
+    "stabilization_floor_m": 1.0,
+    "min_center_distance_km": 20.0
+  },
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1",
+    "pyproj": "3.8.0"
+  },
+  "score_meaning": "Heuristic similarity of kilometre-scale terrain statistics within this limited corpus; not a probability, not calibrated, no universal strong-match threshold."
+}

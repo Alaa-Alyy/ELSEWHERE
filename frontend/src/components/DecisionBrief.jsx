@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { fmt, SLOPE_BIN_LABELS } from '../format.js';
 import { friendlyMessage } from '../api/errors.js';
 import { PROFILES } from '../state.js';
@@ -24,6 +25,9 @@ function ProposedTest({ test }) {
 export default function DecisionBrief({ state, reference, sources, onConfirm, onBack }) {
   const { selectedCandidateId, alternativeCandidateId, decisionSnapshot: d, decisionPending, decisionError } = state;
   const w = state.ranking?.weights;
+  const recordRef = useRef(null);
+  // Keep keyboard focus: the confirm button disappears once the record arrives.
+  useEffect(() => { if (d) recordRef.current?.focus(); }, [d]);
 
   return (
     <div className="panel-section brief">
@@ -50,7 +54,7 @@ export default function DecisionBrief({ state, reference, sources, onConfirm, on
       {decisionError && <p className="error" role="alert">Decision unavailable: {friendlyMessage(decisionError)}</p>}
 
       {d && (
-        <article data-testid="decision-record">
+        <article data-testid="decision-record" ref={recordRef} tabIndex={-1} aria-label="Mission Decision Brief record">
           <dl className="kv">
             <dt>Decision ID</dt><dd className="mono">{d.decision_id}</dd>
             <dt>Generated (UTC)</dt><dd>{d.generated_at_utc}</dd>

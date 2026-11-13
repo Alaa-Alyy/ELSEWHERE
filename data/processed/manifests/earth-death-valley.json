@@ -1,0 +1,154 @@
+{
+  "schema_version": "2.0",
+  "pipeline_version": "2.0",
+  "region_id": "earth-death-valley",
+  "kind": "parent",
+  "body": "earth",
+  "is_demo": false,
+  "center": {
+    "lat": 36.24,
+    "lon": -116.82
+  },
+  "center_status": "frozen (no adjustment)",
+  "inputs": [
+    {
+      "source_id": "earth-srtmgl1-n35w116",
+      "filename": "data/raw/earth/earth-death-valley/N35W116.SRTMGL1.hgt.zip",
+      "sha256": "e1afbfec7055cbdcadeb38d4c801f3d8f0542dbc1e36dc18f9e9df4ecea198af",
+      "samples_binned": 0,
+      "tile": "N35W116",
+      "required_by_footprint": false
+    },
+    {
+      "source_id": "earth-srtmgl1-n35w117",
+      "filename": "data/raw/earth/earth-death-valley/N35W117.SRTMGL1.hgt.zip",
+      "sha256": "1a0494f8d35d86d81d717cd9204788eca0dd06cdbbe4292fab2ada7f2f5ae90b",
+      "samples_binned": 2245456,
+      "tile": "N35W117",
+      "required_by_footprint": true
+    },
+    {
+      "source_id": "earth-srtmgl1-n35w118",
+      "filename": "data/raw/earth/earth-death-valley/N35W118.SRTMGL1.hgt.zip",
+      "sha256": "702ba33bcc463115165f753a2e8c65c52f9c2e439463bc03dc04aecec3c9be83",
+      "samples_binned": 1176728,
+      "tile": "N35W118",
+      "required_by_footprint": true
+    },
+    {
+      "source_id": "earth-srtmgl1-n36w116",
+      "filename": "data/raw/earth/earth-death-valley/N36W116.SRTMGL1.hgt.zip",
+      "sha256": "7f4768a5d66d35365f6fe0eb87b1b530942d3cb69e53bdf7c5cbbbe03b491795",
+      "samples_binned": 0,
+      "tile": "N36W116",
+      "required_by_footprint": false
+    },
+    {
+      "source_id": "earth-srtmgl1-n36w117",
+      "filename": "data/raw/earth/earth-death-valley/N36W117.SRTMGL1.hgt.zip",
+      "sha256": "c4ef3f5784644c88252b81dd8e6ca612ed4b2049112de3debd8f8066e126dabf",
+      "samples_binned": 6969292,
+      "tile": "N36W117",
+      "required_by_footprint": true
+    },
+    {
+      "source_id": "earth-srtmgl1-n36w118",
+      "filename": "data/raw/earth/earth-death-valley/N36W118.SRTMGL1.hgt.zip",
+      "sha256": "8264a3de3b974cd188ce41bc03735b49ae66fd8d111679744bd5f705c7d16d5e",
+      "samples_binned": 3661942,
+      "tile": "N36W118",
+      "required_by_footprint": true
+    }
+  ],
+  "tiles_without_granule": [],
+  "source_product": {
+    "short_name": "SRTMGL1",
+    "version": "003",
+    "units": "m",
+    "scale": 1.0,
+    "offset": 0.0,
+    "void_value": -32768,
+    "vertical_datum": "EGM96 geoid",
+    "native_resolution": "1 arc-second (~30 m)"
+  },
+  "native_crs_wkt": "GEOGCRS[\"WGS 84\",ENSEMBLE[\"World Geodetic System 1984 ensemble\",MEMBER[\"World Geodetic System 1984 (Transit)\"],MEMBER[\"World Geodetic System 1984 (G730)\"],MEMBER[\"World Geodetic System 1984 (G873)\"],MEMBER[\"World Geodetic System 1984 (G1150)\"],MEMBER[\"World Geodetic System 1984 (G1674)\"],MEMBER[\"World Geodetic System 1984 (G1762)\"],MEMBER[\"World Geodetic System 1984 (G2139)\"],MEMBER[\"World Geodetic System 1984 (G2296)\"],ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]],ENSEMBLEACCURACY[2.0]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"geodetic latitude (Lat)\",north,ORDER[1],ANGLEUNIT[\"degree\",0.0174532925199433]],AXIS[\"geodetic longitude (Lon)\",east,ORDER[2],ANGLEUNIT[\"degree\",0.0174532925199433]],USAGE[SCOPE[\"Horizontal component of 3D system.\"],AREA[\"World.\"],BBOX[-90,-180,90,180]],ID[\"EPSG\",4326]]",
+  "analysis_crs_wkt": "PROJCRS[\"unknown\",BASEGEOGCRS[\"unknown\",DATUM[\"Unknown based on WGS 84 ellipsoid\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",7030]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8901]]],CONVERSION[\"unknown\",METHOD[\"Azimuthal Equidistant\",ID[\"EPSG\",1125]],PARAMETER[\"Latitude of natural origin\",36.24,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8801]],PARAMETER[\"Longitude of natural origin\",-116.82,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8802]],PARAMETER[\"False easting\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"(E)\",east,ORDER[1],LENGTHUNIT[\"metre\",1,ID[\"EPSG\",9001]]],AXIS[\"(N)\",north,ORDER[2],LENGTHUNIT[\"metre\",1,ID[\"EPSG\",9001]]]]",
+  "analysis_crs_proj4": "+proj=aeqd +lat_0=36.24 +lon_0=-116.82 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs +type=crs",
+  "body_figure": "WGS84 ellipsoid (EPSG:4326 horizontal)",
+  "resampling": "area average by source-pixel-centre binning into 1000 m cells; cell valid if valid samples >= 0.5 x nominal; duplicate HGT edge row/column excluded; no gap filling",
+  "buffer_cells": 2,
+  "grid_cells": 104,
+  "grid_definition": "row 0 = north edge of buffered grid, rows increase southward, cols increase eastward",
+  "regrid_stats": {
+    "source_samples_in_grid": 14053418,
+    "source_samples_invalid": 0,
+    "source_valid_elevation_min_m": -130.0,
+    "source_valid_elevation_max_m": 3352.0,
+    "cells_total": 10816,
+    "cells_without_samples": 0,
+    "cells_valid": 10816,
+    "cells_all_exact_zero": 0,
+    "nominal_samples_per_cell": 1296.0,
+    "subsamples_per_source_pixel": 1,
+    "source_pixel_ground_m": [
+      30.82,
+      30.82,
+      30.82,
+      30.82
+    ]
+  },
+  "coverage": {
+    "interior_cells": 10000,
+    "interior_valid_cells": 10000,
+    "interior_valid_fraction": 1.0
+  },
+  "elevation_range_valid_interior_m": [
+    -83.96981424148606,
+    3148.78515625
+  ],
+  "windows": {
+    "planned": 81,
+    "accepted": 81,
+    "rejected": []
+  },
+  "settings": {
+    "schema_version": "2.0",
+    "pipeline_version": "2.0",
+    "score_version": "2.0",
+    "resolution_m": 1000.0,
+    "parent_size_cells": 100,
+    "window_size_cells": 20,
+    "stride_cells": 10,
+    "buffer_cells": 2,
+    "min_cell_sample_fraction": 0.5,
+    "slope_bin_edges_deg": [
+      0.0,
+      1.0,
+      3.0,
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      45.0,
+      90.0
+    ],
+    "percentile_method": "linear",
+    "min_valid_fraction": 0.95,
+    "min_valid_cells": 100,
+    "max_exact_zero_fraction": 0.05,
+    "profiles": {
+      "terrain_general": 0.4,
+      "slope_focus": 0.7
+    },
+    "stabilization_floor_m": 1.0,
+    "min_center_distance_km": 20.0
+  },
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1",
+    "pyproj": "3.8.0"
+  }
+}
