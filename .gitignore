@@ -1,0 +1,26 @@
+# Raw rasters never go into Git (share via the team Drive folder instead)
+data/raw/**
+!data/raw/README.md
+
+# Secrets
+.env
+*.env
+!.env.example
+.netrc
+_netrc
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

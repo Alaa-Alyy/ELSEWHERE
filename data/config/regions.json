@@ -1,0 +1,23 @@
+{
+  "schema_version": "2.0",
+  "pipeline_version": "2.0",
+  "status": "provisional",
+  "note": "Planning seeds only. Person 1 must verify coverage in GIS and then freeze. Centers are not validated scientific claims.",
+  "analysis": {
+    "resolution_m": 1000,
+    "window_size_km": 20,
+    "stride_km": 10,
+    "parent_size_km": 100,
+    "processing_buffer_cells": 2,
+    "download_buffer_km": 5
+  },
+  "parents": [
+    {"id": "earth-khaybar",      "body": "earth", "kind": "parent", "name": "Harrat Khaybar",   "center": {"lat": 25.7,  "lon": 39.9}},
+    {"id": "earth-pinacate",     "body": "earth", "kind": "parent", "name": "El Pinacate",      "center": {"lat": 31.77, "lon": -113.5}},
+    {"id": "earth-death-valley", "body": "earth", "kind": "parent", "name": "Death Valley",     "center": {"lat": 36.24, "lon": -116.82}}
+  ],
+  "references": [
+    {"id": "moon-south-pole-sector", "body": "moon", "config": "data/config/moon_region.json"},
+    {"id": "mars-jezero",            "body": "mars", "config": "data/config/mars_region.json"}
+  ]
+}

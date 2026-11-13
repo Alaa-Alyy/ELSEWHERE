@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "id": "moon-south-pole-sector",
+  "body": "moon",
+  "kind": "reference",
+  "name": "Lunar south polar terrain sector",
+  "status": "provisional",
+  "center": {"lat": -85.0, "lon": 0.0},
+  "coordinate_convention": "Lunar planetocentric latitude, east-positive longitude (Moon 2015 sphere, IAU 30100). Never drawn on Earth.",
+  "body_figure": "Sphere, radius 1737400 m (as declared in the source GeoTIFF CRS, south polar stereographic)",
+  "window_size_km": 20,
+  "crop_size_km": 40,
+  "crop_note": "Raw crop is 40 km x 40 km in the native polar stereographic grid. Person 1 builds the 20 km window after derivatives.",
+  "source_ids": ["moon-lola-ldem-80s-80mpp-adj"],
+  "limitations": [
+    "Prototype comparison sector, not an officially selected lunar-base location.",
+    "Terrain only: illumination, temperature and ice are not represented."
+  ]
+}
