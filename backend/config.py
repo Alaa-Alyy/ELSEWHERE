@@ -30,6 +30,13 @@ def _bool(value: str | None, default: bool = False) -> bool:
 
 DEFAULT_ORIGINS = "http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173"
 
+# Chat providers reachable through the official OpenAI SDK (Gemini exposes an OpenAI-compatible endpoint).
+PROVIDERS = {
+    "openai": {"base_url": None, "default_model": "gpt-4.1-mini", "key_env": "OPENAI_API_KEY"},
+    "gemini": {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+               "default_model": "gemini-2.5-flash", "key_env": "GEMINI_API_KEY"},
+}
+
 
 @dataclass
 class Settings:
@@ -37,8 +44,10 @@ class Settings:
     data_dir: Path = REPO_ROOT / "data" / "processed"
     sources_dir: Path = REPO_ROOT / "data" / "sources"
     allowed_origins: list[str] = field(default_factory=lambda: DEFAULT_ORIGINS.split(","))
-    openai_api_key: str | None = None
-    openai_model: str = "gpt-4.1-mini"
+    openai_api_key: str | None = None   # key for the selected provider
+    openai_model: str = "gpt-4.1-mini"  # model for the selected provider
+    llm_provider: str = "openai"
+    llm_base_url: str | None = None
     chat_timeout_seconds: float = 25.0
     chat_rate_limit_per_minute: int = 20
 
@@ -50,13 +59,20 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         e = os.environ
+        provider = e.get("LLM_PROVIDER", "openai").strip().lower()
+        if provider not in PROVIDERS:
+            raise ValueError(f"LLM_PROVIDER must be one of {sorted(PROVIDERS)}")
+        p = PROVIDERS[provider]
+        model_env = "OPENAI_MODEL" if provider == "openai" else "GEMINI_MODEL"
         return cls(
+            llm_provider=provider,
+            llm_base_url=p["base_url"],
             demo_fixtures=_bool(e.get("DEMO_FIXTURES"), False),
             data_dir=_path(e.get("DATA_DIR"), REPO_ROOT / "data" / "processed"),
             sources_dir=_path(e.get("SOURCES_DIR"), REPO_ROOT / "data" / "sources"),
             allowed_origins=[o.strip() for o in e.get("ALLOWED_ORIGINS", DEFAULT_ORIGINS).split(",") if o.strip()],
-            openai_api_key=e.get("OPENAI_API_KEY") or None,
-            openai_model=e.get("OPENAI_MODEL", "gpt-4.1-mini"),
+            openai_api_key=e.get(p["key_env"]) or None,
+            openai_model=e.get(model_env, p["default_model"]),
             chat_timeout_seconds=float(e.get("CHAT_TIMEOUT_SECONDS", "25")),
             chat_rate_limit_per_minute=int(e.get("CHAT_RATE_LIMIT_PER_MINUTE", "20")),
         )

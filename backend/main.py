@@ -81,6 +81,7 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
                       and repo.references_valid and not repo.problems)
         return {"status": "ok", "schema_version": SCHEMA_VERSION, "data_ready": data_ready,
                 "chat_available": chat.available, "demo_mode": settings.demo_fixtures,
+                "chat_model": f"{settings.llm_provider}:{settings.openai_model}" if chat.available else None,
                 "corpus_version": search.corpus_version, "problems": repo.problems[:5]}
 
     @app.get("/api/references")

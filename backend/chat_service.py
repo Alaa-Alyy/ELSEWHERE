@@ -41,7 +41,7 @@ class ChatService:
             try:
                 from openai import OpenAI
 
-                self._client = OpenAI(api_key=settings.openai_api_key,
+                self._client = OpenAI(api_key=settings.openai_api_key, base_url=settings.llm_base_url,
                                       timeout=settings.chat_timeout_seconds, max_retries=1)
             except Exception as exc:  # pragma: no cover
                 log.warning("OpenAI client unavailable: %s", type(exc).__name__)

@@ -61,7 +61,8 @@ and `scripts/contract_check.py` passes.
 
 ## Environment variables
 
-Backend (`backend/.env`, gitignored): `OPENAI_API_KEY`, `OPENAI_MODEL` (gpt-4.1-mini), `DATA_DIR`,
+Backend (`backend/.env`, gitignored): `LLM_PROVIDER` (`openai` default | `gemini`), `OPENAI_API_KEY`,
+`OPENAI_MODEL` (gpt-4.1-mini), `GEMINI_API_KEY`, `GEMINI_MODEL` (gemini-2.5-flash), `DATA_DIR`,
 `SOURCES_DIR`, `ALLOWED_ORIGINS`, `CHAT_TIMEOUT_SECONDS`, `DEMO_FIXTURES`.
 Frontend (public, `VITE_` only): `VITE_USE_FIXTURES`, `VITE_API_BASE_URL`, `VITE_API_TIMEOUT_MS`.
 No secret ever goes into the frontend.
