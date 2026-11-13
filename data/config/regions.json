@@ -1,12 +1,13 @@
 {
   "schema_version": "2.0",
   "pipeline_version": "2.0",
-  "status": "provisional",
+  "status": "frozen",
   "note": "Planning seeds only. Person 1 must verify coverage in GIS and then freeze. Centers are not validated scientific claims.",
   "freeze": {
-    "frozen": false,
-    "frozen_at_utc": null,
-    "procedure": "Build the real corpus, inspect data/processed/previews/earth-*.png and manifests (coverage, rejected windows, water guard), shift a centre only for documented coverage reasons, record it in center_adjustments, set frozen=true BEFORE looking at match rankings."
+    "frozen": true,
+    "frozen_at_utc": "2026-11-13T22:02:43Z",
+    "procedure": "Build the real corpus, inspect data/processed/previews/earth-*.png and manifests (coverage, rejected windows, water guard), shift a centre only for documented coverage reasons, record it in center_adjustments, set frozen=true BEFORE looking at match rankings.",
+    "frozen_note": "Frozen after coverage review only (no rankings inspected). All 3 parents: interior valid fraction 1.0. Pinacate: 11 SW-corner windows rejected by the water guard (cells exactly 0 m, 13-100%); 70 valid windows remain, so no centre shift was needed. Frozen in Person 3 session at team request; Person 1 to confirm."
   },
   "analysis": {
     "resolution_m": 1000,
@@ -17,17 +18,61 @@
     "download_buffer_km": 5
   },
   "parents": [
-    {"id": "earth-khaybar",      "body": "earth", "kind": "parent", "name": "Harrat Khaybar", "country": "Saudi Arabia",
-     "center": {"lat": 25.7,  "lon": 39.9},    "center_status": "provisional planning seed", "center_adjustments": []},
-    {"id": "earth-pinacate",     "body": "earth", "kind": "parent", "name": "El Pinacate",    "country": "Mexico",
-     "center": {"lat": 31.77, "lon": -113.5},  "center_status": "provisional planning seed", "center_adjustments": [],
-     "open_issue": "Gulf of California coast near the SW corner; check sea/coast windows before freezing."},
-    {"id": "earth-death-valley", "body": "earth", "kind": "parent", "name": "Death Valley",   "country": "United States",
-     "center": {"lat": 36.24, "lon": -116.82}, "center_status": "provisional planning seed", "center_adjustments": [],
-     "open_issue": "Tile N36W117 min -130 m vs Badwater ~-86 m: possible SRTM artifact/void fill; not blocking, note only."}
+    {
+      "id": "earth-khaybar",
+      "body": "earth",
+      "kind": "parent",
+      "name": "Harrat Khaybar",
+      "country": "Saudi Arabia",
+      "center": {
+        "lat": 25.7,
+        "lon": 39.9
+      },
+      "center_status": "frozen (no adjustment)",
+      "center_adjustments": []
+    },
+    {
+      "id": "earth-pinacate",
+      "body": "earth",
+      "kind": "parent",
+      "name": "El Pinacate",
+      "country": "Mexico",
+      "center": {
+        "lat": 31.77,
+        "lon": -113.5
+      },
+      "center_status": "frozen (no adjustment)",
+      "center_adjustments": [],
+      "open_issue": "Resolved at freeze: SW coastal/sea windows r06-r08 c00-c03 (11) rejected by water guard; centre kept."
+    },
+    {
+      "id": "earth-death-valley",
+      "body": "earth",
+      "kind": "parent",
+      "name": "Death Valley",
+      "country": "United States",
+      "center": {
+        "lat": 36.24,
+        "lon": -116.82
+      },
+      "center_status": "frozen (no adjustment)",
+      "center_adjustments": [],
+      "open_issue": "Tile N36W117 min -130 m vs Badwater ~-86 m: possible SRTM artifact/void fill; not blocking, note only.",
+      "notes": [
+        "Tile N36W117 minimum -130 m (below Badwater ~-86 m): possible SRTM artifact; noted, not adjusted."
+      ]
+    }
   ],
   "references": [
-    {"id": "moon-south-pole-sector", "body": "moon", "config": "data/config/moon_region.json"},
-    {"id": "mars-jezero",            "body": "mars", "config": "data/config/mars_region.json"}
+    {
+      "id": "moon-south-pole-sector",
+      "body": "moon",
+      "config": "data/config/moon_region.json"
+    },
+    {
+      "id": "mars-jezero",
+      "body": "mars",
+      "config": "data/config/mars_region.json"
+    }
   ]
 }

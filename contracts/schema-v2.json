@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "missionmatch/schema-v2.json",
+  "title": "MissionMatch shared contract v2.0",
+  "description": "Machine-readable form of the v2.0 contract appendix. Additive fields are allowed; listed fields must not be renamed.",
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,80}$" },
+    "candidateId": { "type": "string", "pattern": "^earth-(khaybar|pinacate|death-valley)-r\\d{2}-c\\d{2}$" },
+    "finite": { "type": "number" },
+    "weights": {
+      "type": "object",
+      "required": ["slope", "relief", "variation"],
+      "properties": { "slope": { "type": "number", "minimum": 0, "maximum": 1 }, "relief": { "type": "number" }, "variation": { "type": "number" } }
+    },
+    "errorEnvelope": {
+      "type": "object", "required": ["error"],
+      "properties": { "error": { "type": "object", "required": ["code", "message", "retryable"],
+        "properties": { "code": { "type": "string" }, "message": { "type": "string" }, "retryable": { "type": "boolean" } } } }
+    },
+    "metrics": {
+      "type": ["object", "null"],
+      "properties": {
+        "slope_histogram": { "type": ["array", "null"], "items": { "type": "number", "minimum": 0, "maximum": 1 }, "minItems": 8, "maxItems": 8 },
+        "relief_p95_p05_m": { "type": ["number", "null"] },
+        "local_variation_m": { "type": ["number", "null"] }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "required": ["pipeline_version", "resolution_m", "window_size_km", "valid_fraction", "status", "is_demo"],
+      "properties": {
+        "pipeline_version": { "const": "2.0" },
+        "resolution_m": { "const": 1000 },
+        "window_size_km": { "type": "number" },
+        "valid_fraction": { "type": ["number", "null"] },
+        "status": { "enum": ["pending", "valid", "invalid"] },
+        "is_demo": { "type": "boolean" }
+      }
+    },
+    "regionRecord": {
+      "type": "object",
+      "required": ["schema_version", "id", "body", "kind", "name", "center", "footprint", "coordinate_convention",
+                   "source_ids", "preview_url", "limitations", "analysis", "metrics"],
+      "properties": {
+        "schema_version": { "const": "2.0" },
+        "id": { "$ref": "#/$defs/id" },
+        "body": { "enum": ["earth", "moon", "mars"] },
+        "kind": { "enum": ["reference", "parent", "candidate"] },
+        "parent_id": { "type": "string" },
+        "center": { "type": "object", "properties": { "lat": { "type": ["number", "null"] }, "lon": { "type": ["number", "null"] } } },
+        "source_ids": { "type": "array", "items": { "type": "string" } },
+        "preview_url": { "type": ["string", "null"], "pattern": "^/assets/previews/[\\w.-]+\\.png$" },
+        "limitations": { "type": "array", "items": { "type": "string" } },
+        "analysis": { "$ref": "#/$defs/analysis" },
+        "metrics": { "$ref": "#/$defs/metrics" }
+      }
+    },
+    "sourceRecord": {
+      "type": "object",
+      "required": ["id", "title", "agency", "product", "version", "landing_url", "download_url", "downloaded_at_utc",
+                   "filename", "sha256", "units", "native_resolution", "native_crs_wkt", "citation", "license_or_usage_notes"]
+    },
+    "rankingItem": {
+      "type": "object",
+      "required": ["candidate_id", "parent_id", "score", "distances", "source_ids", "reason_codes", "limitations"],
+      "properties": {
+        "candidate_id": { "$ref": "#/$defs/candidateId" },
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "distances": { "type": "object", "required": ["slope", "relief", "variation"] }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "HealthResponse": {
+      "type": "object", "required": ["status", "schema_version", "data_ready", "chat_available"]
+    },
+    "ListEnvelope": {
+      "type": "object", "required": ["schema_version", "items"],
+      "properties": { "schema_version": { "const": "2.0" }, "items": { "type": "array" } }
+    },
+    "CandidateResponse": {
+      "type": "object", "required": ["schema_version", "item", "sources"],
+      "properties": { "item": { "$ref": "#/$defs/regionRecord" }, "sources": { "type": "array", "items": { "$ref": "#/$defs/sourceRecord" } } }
+    },
+    "RankingResponse": {
+      "type": "object",
+      "required": ["schema_version", "reference_id", "profile", "score_version", "corpus_version", "weights", "scope", "items", "excluded", "warnings"],
+      "properties": {
+        "schema_version": { "const": "2.0" },
+        "score_version": { "const": "2.0" },
+        "profile": { "enum": ["terrain_general", "slope_focus"] },
+        "weights": { "$ref": "#/$defs/weights" },
+        "scope": { "type": "object", "required": ["planned_windows", "valid_windows", "returned_windows", "min_center_distance_km"] },
+        "items": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/rankingItem" } },
+        "excluded": { "type": "array", "items": { "type": "object", "required": ["candidate_id", "reason"] } },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "DecisionRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reference_id", "profile", "selected_candidate_id"],
+      "properties": {
+        "reference_id": { "type": "string" }, "profile": { "enum": ["terrain_general", "slope_focus"] },
+        "slope_weight": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "selected_candidate_id": { "type": "string" }, "alternative_candidate_id": { "type": ["string", "null"] }
+      }
+    },
+    "DecisionRecord": {
+      "type": "object",
+      "required": ["schema_version", "decision_id", "generated_at_utc", "reference_id", "profile", "selected_candidate_id",
+                   "alternative_candidate_id", "weights", "pipeline_version", "score_version", "corpus_version",
+                   "evidence", "tradeoffs", "limitations", "proposed_test", "source_ids", "search_scope"],
+      "properties": {
+        "evidence": { "type": "array", "items": { "type": "object", "required": ["metric", "units", "target_value", "selected_value", "distance"] } },
+        "tradeoffs": { "type": "array", "items": { "type": "object", "required": ["metric", "weight", "selected_distance", "alternative_distance", "selected_contribution", "alternative_contribution"] } },
+        "proposed_test": { "type": ["object", "string", "null"] },
+        "search_scope": { "type": "object", "required": ["parents", "planned_windows", "valid_windows"] }
+      }
+    },
+    "ChatRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["message", "reference_id", "profile"],
+      "properties": {
+        "message": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "reference_id": { "type": "string" }, "profile": { "enum": ["terrain_general", "slope_focus"] },
+        "slope_weight": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "selected_candidate_id": { "type": ["string", "null"] }, "alternative_candidate_id": { "type": ["string", "null"] },
+        "history": { "type": "array", "maxItems": 6, "items": { "type": "object", "required": ["role", "content"],
+          "properties": { "role": { "enum": ["user", "assistant"] } } } }
+      }
+    },
+    "ChatResponse": {
+      "type": "object", "required": ["answer", "candidate_ids", "source_ids", "limitations"]
+    },
+    "ErrorEnvelope": { "$ref": "#/$defs/errorEnvelope" }
+  }
+}

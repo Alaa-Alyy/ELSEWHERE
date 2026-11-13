@@ -1,0 +1,9 @@
+{
+  "status": "ok",
+  "schema_version": "2.0",
+  "data_ready": false,
+  "chat_available": false,
+  "demo_mode": true,
+  "corpus_version": "sha256:a108f5a6a33f314f950b6e8fb6aabb97f138cf3fbe85340a848e23c56614774e",
+  "problems": []
+}

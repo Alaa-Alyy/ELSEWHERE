@@ -1,0 +1,157 @@
+{
+  "schema_version": "2.0",
+  "reference_id": "mars-jezero",
+  "profile": "terrain_general",
+  "score_version": "2.0",
+  "corpus_version": "sha256:a108f5a6a33f314f950b6e8fb6aabb97f138cf3fbe85340a848e23c56614774e",
+  "weights": {
+    "slope": 0.4,
+    "relief": 0.3,
+    "variation": 0.3
+  },
+  "scope": {
+    "planned_windows": 243,
+    "valid_windows": 232,
+    "returned_windows": 3,
+    "min_center_distance_km": 20.0
+  },
+  "items": [
+    {
+      "candidate_id": "earth-pinacate-r02-c05",
+      "parent_id": "earth-pinacate",
+      "score": 93.27054380668177,
+      "distances": {
+        "slope": 0.0,
+        "relief": 0.024781474725352238,
+        "variation": 0.19953373171858857
+      },
+      "source_ids": [
+        "demo-synthetic-earth-pinacate"
+      ],
+      "reason_codes": [
+        "closest_metric:slope",
+        "largest_gap_metric:variation",
+        "relief_lower_than_reference",
+        "variation_lower_than_reference",
+        "dominant_slope_bin_same"
+      ],
+      "limitations": [
+        "Closest available window within a limited 3-parent corpus, not a global best or validated analog.",
+        "Kilometre-scale (1000 m) terrain statistics only; local variation is not rock/grain roughness.",
+        "Overlapping windows are correlated samples, not independent observations.",
+        "Soil, temperature, biology, gravity, radiation, access and permits are not established by terrain data.",
+        "Not a rover-safe route or landing-safety assessment; field suitability is unknown."
+      ],
+      "rank": 1,
+      "total_distance": 0.06729456193318224,
+      "contributions": {
+        "slope": 0.0,
+        "relief": 0.007434442417605671,
+        "variation": 0.05986011951557657
+      },
+      "center": {
+        "lat": 31.9503242,
+        "lon": -113.3942294
+      },
+      "preview_url": "/assets/previews/earth-pinacate-r02-c05.png",
+      "is_demo": true
+    },
+    {
+      "candidate_id": "earth-pinacate-r04-c03",
+      "parent_id": "earth-pinacate",
+      "score": 93.06883481331593,
+      "distances": {
+        "slope": 0.012499999999999978,
+        "relief": 0.017908788751143108,
+        "variation": 0.1964633841383261
+      },
+      "source_ids": [
+        "demo-synthetic-earth-pinacate"
+      ],
+      "reason_codes": [
+        "closest_metric:slope",
+        "largest_gap_metric:variation",
+        "relief_higher_than_reference",
+        "variation_lower_than_reference",
+        "dominant_slope_bin_same"
+      ],
+      "limitations": [
+        "Closest available window within a limited 3-parent corpus, not a global best or validated analog.",
+        "Kilometre-scale (1000 m) terrain statistics only; local variation is not rock/grain roughness.",
+        "Overlapping windows are correlated samples, not independent observations.",
+        "Soil, temperature, biology, gravity, radiation, access and permits are not established by terrain data.",
+        "Not a rover-safe route or landing-safety assessment; field suitability is unknown."
+      ],
+      "rank": 2,
+      "total_distance": 0.06931165186684074,
+      "contributions": {
+        "slope": 0.004999999999999991,
+        "relief": 0.005372636625342932,
+        "variation": 0.058939015241497826
+      },
+      "center": {
+        "lat": 31.7699563,
+        "lon": -113.6055651
+      },
+      "preview_url": "/assets/previews/earth-pinacate-r04-c03.png",
+      "is_demo": true
+    },
+    {
+      "candidate_id": "earth-khaybar-r01-c07",
+      "parent_id": "earth-khaybar",
+      "score": 91.951674343642,
+      "distances": {
+        "slope": 0.0,
+        "relief": 0.014649389144677595,
+        "variation": 0.2536281327339225
+      },
+      "source_ids": [
+        "demo-synthetic-earth-khaybar"
+      ],
+      "reason_codes": [
+        "closest_metric:slope",
+        "largest_gap_metric:variation",
+        "relief_lower_than_reference",
+        "variation_lower_than_reference",
+        "dominant_slope_bin_same"
+      ],
+      "limitations": [
+        "Closest available window within a limited 3-parent corpus, not a global best or validated analog.",
+        "Kilometre-scale (1000 m) terrain statistics only; local variation is not rock/grain roughness.",
+        "Overlapping windows are correlated samples, not independent observations.",
+        "Soil, temperature, biology, gravity, radiation, access and permits are not established by terrain data.",
+        "Not a rover-safe route or landing-safety assessment; field suitability is unknown."
+      ],
+      "rank": 3,
+      "total_distance": 0.08048325656358003,
+      "contributions": {
+        "slope": 0.0,
+        "relief": 0.004394816743403278,
+        "variation": 0.07608843982017674
+      },
+      "center": {
+        "lat": 25.9704856,
+        "lon": 40.1995716
+      },
+      "preview_url": "/assets/previews/earth-khaybar-r01-c07.png",
+      "is_demo": true
+    }
+  ],
+  "excluded": [
+    {
+      "candidate_id": "earth-pinacate-r00-c05",
+      "reason": "valid_fraction_below_0.95: 0.9025"
+    },
+    {
+      "candidate_id": "earth-pinacate-r00-c06",
+      "reason": "valid_fraction_below_0.95: 0.5775"
+    },
+    {
+      "candidate_id": "earth-pinacate-r00-c07",
+      "reason": "valid_fraction_below_0.95: 0.3825"
+    }
+  ],
+  "warnings": [
+    "DEMO MODE: synthetic fixture data (is_demo=true); not scientific results"
+  ]
+}
