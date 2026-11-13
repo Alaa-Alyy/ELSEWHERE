@@ -1,0 +1,47 @@
+{
+  "schema_version": "2.0",
+  "items": [
+    {
+      "id": "mars-mola-mgs-dem-463m",
+      "title": "Mars MGS MOLA DEM 463m (global mosaic) - 40 km crop around Jezero",
+      "agency": "NASA / USGS Astrogeology",
+      "product": "Mars_MGS_MOLA_DEM_mosaic_global_463m",
+      "version": "unknown (USGS mosaic; see landing page)",
+      "landing_url": "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
+      "download_url": "https://planetarymaps.usgs.gov/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
+      "downloaded_at_utc": "2026-11-13T19:19:51Z",
+      "filename": "data/raw/mars/mars-jezero_mola463m_crop40km.tif",
+      "sha256": "cef0ab2b3f988342045cad078fbe3bf962fa68b901375e5c84599a43ddbc3907",
+      "units": "meters (int16, scale 1, offset 0); heights relative to the MOLA areoid per USGS product description - verify on landing page",
+      "native_resolution": "463.0935 m x 463.0935 m (~128 px/deg)",
+      "native_crs_wkt": "PROJCS[\"Equirectangular Mars\",GEOGCS[\"GCS_Mars\",DATUM[\"D_Mars\",SPHEROID[\"Mars_localRadius\",3396190,0]],PRIMEM[\"Reference_Meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+      "citation": "Smith, D.E., et al. (2001), Mars Orbiter Laser Altimeter: Experiment summary after the first year of global mapping of Mars, J. Geophys. Res., 106(E10), 23689-23722. USGS Astrogeology MOLA 463 m mosaic.",
+      "license_or_usage_notes": "NASA/USGS public-domain planetary data; cite MOLA team and USGS Astrogeology.",
+      "processing_notes": {
+        "method": "GDAL /vsicurl/ windowed read of the official GeoTIFF; pixels copied unchanged (no resampling).",
+        "nodata": -32768.0,
+        "dtype": "int16",
+        "scale": 1.0,
+        "offset": 0.0,
+        "source_size_px": [
+          46080,
+          23040
+        ],
+        "crop_shape_px": [
+          86,
+          91
+        ],
+        "crop_valid_fraction": 1.0,
+        "crop_min": -2716.0,
+        "crop_max": -1569.0,
+        "crop_bounds_native": [
+          4569742.852,
+          1073025.422,
+          4611907.794,
+          1113025.422
+        ],
+        "region_config": "data/config/mars_region.json"
+      }
+    }
+  ]
+}

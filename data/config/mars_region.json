@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "id": "mars-jezero",
+  "body": "mars",
+  "kind": "reference",
+  "name": "Jezero regional terrain window",
+  "status": "provisional",
+  "center": {"lat": 18.44, "lon": 77.45},
+  "coordinate_convention": "Mars planetocentric latitude, east-positive longitude in [-180,180] (matches the USGS MOLA 463 m mosaic). Never drawn on Earth.",
+  "body_figure": "Sphere, radius 3396190 m (as declared in the source GeoTIFF CRS)",
+  "window_size_km": 20,
+  "crop_size_km": 40,
+  "crop_note": "Raw crop is 40 km x 40 km (20 km window + generous buffer). Person 1 reprojects to a local metric grid and crops the 20 km window after derivatives.",
+  "source_ids": ["mars-mola-mgs-dem-463m"],
+  "limitations": [
+    "Regional terrain reference at ~463 m native / 1000 m analysis scale; not a landing-safety or rover-navigation product.",
+    "Center is a planning seed, not a validated scientific claim."
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": "2.0",
+  "items": [
+    {
+      "id": "moon-lola-ldem-80s-80mpp-adj",
+      "title": "LOLA south pole DEM LDEM_80S_80MPP_ADJ - 40 km crop around (-85, 0)",
+      "agency": "NASA GSFC PGDA",
+      "product": "LDEM_80S_80MPP_ADJ.TIF",
+      "version": "ADJ (Barker et al. 2023 release)",
+      "landing_url": "https://pgda.gsfc.nasa.gov/products/90",
+      "download_url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+      "downloaded_at_utc": "2026-11-13T19:20:07Z",
+      "filename": "data/raw/moon/moon-south-pole-sector_lola80m_crop40km.tif",
+      "sha256": "08987f3410c79402da0c27171bb37c9d392f707d78aff88dcdf1f5a55b15ae96",
+      "units": "meters (float32); heights relative to 1737.4 km sphere (file history: km x 1000)",
+      "native_resolution": "80.0000 m x 80.0000 m",
+      "native_crs_wkt": "PROJCS[\"Moon (2015) - Sphere / Ocentric / South Polar\",GEOGCS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",SPHEROID[\"Moon (2015) - Sphere\",1737400,0,AUTHORITY[\"IAU\",\"30100\"]],AUTHORITY[\"IAU\",\"30100\"]],PRIMEM[\"Reference Meridian\",0,AUTHORITY[\"IAU\",\"30100\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"IAU\",\"30100\"]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH],AUTHORITY[\"IAU\",\"30135\"]]",
+      "citation": "Barker, M.K., et al. (2023), Improved LOLA elevation maps for south pole landing sites, Planet. Sci. J., DOI 10.3847/PSJ/acf3e1. Dataset DOI 10.60903/gsfcpgda-lola-spole.",
+      "license_or_usage_notes": "NASA public data; cite paper and dataset DOI.",
+      "processing_notes": {
+        "method": "GDAL /vsicurl/ windowed read of the official GeoTIFF; pixels copied unchanged (no resampling).",
+        "nodata": "NaN",
+        "dtype": "float32",
+        "scale": 1.0,
+        "offset": 0.0,
+        "source_size_px": [
+          7600,
+          7600
+        ],
+        "crop_shape_px": [
+          500,
+          500
+        ],
+        "crop_valid_fraction": 1.0,
+        "crop_min": -2507.482177734375,
+        "crop_max": 3306.79638671875,
+        "crop_bounds_native": [
+          -20000.0,
+          131713.044,
+          20000.0,
+          171713.044
+        ],
+        "region_config": "data/config/moon_region.json"
+      }
+    }
+  ]
+}
