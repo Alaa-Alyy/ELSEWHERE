@@ -19,6 +19,6 @@ export function friendlyMessage(err) {
   if (err.status === 404) return `Not found: ${err.message}`;
   if (err.status === 422) return `Invalid request: ${err.message}`;
   if (err.code === 'timeout') return 'The server took too long to answer. Please retry.';
-  if (err.code === 'network_error') return 'Cannot reach the MissionMatch API. Check that the backend is running.';
+  if (err.code === 'network_error') return 'Cannot reach the ELSEWHERE API. Check that the backend is running.';
   return err.message || 'Unexpected error';
 }

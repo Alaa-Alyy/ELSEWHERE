@@ -19,7 +19,7 @@ Challenge: *Identify Earth Locations that Analog the Permanent Moon Base Locatio
 
 ## Method (short)
 
-MissionMatch compares one 20 km Moon reference (NASA LOLA south-pole DEM, `LDEM_80S_80MPP_ADJ`) and one
+ELSEWHERE ("Exploring other worlds starts with understanding our own.") compares one 20 km Moon reference (NASA LOLA south-pole DEM, `LDEM_80S_80MPP_ADJ`) and one
 20 km Mars reference (NASA/USGS MOLA 463 m DEM, Jezero) with 243 planned 20 km Earth windows (10 km stride)
 inside three 100 km regions (Harrat Khaybar, El Pinacate, Death Valley; NASA SRTMGL1 v003). All elevations
 are reprojected on each body's own figure to a local metric grid and analysed at 1000 m. Features: 8-bin

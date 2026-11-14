@@ -406,6 +406,15 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(screen.getByTestId('globe').dataset.selected).toBe(ids[1]);   // selection kept
   });
 
+  it('brand: ELSEWHERE with the slogan, on the hub and in the top bar', async () => {
+    render(<App />);
+    expect(screen.getByText('ELSEWHERE', { selector: '.wordmark' })).toBeInTheDocument();
+    expect(document.querySelector('.brand')).toHaveTextContent('ELSEWHERE');
+    expect(screen.queryByText(/MissionMatch/)).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    expect(document.querySelector('.brand-tagline')).toHaveTextContent('Exploring other worlds starts with understanding our own.');
+  });
+
   it('sound is off until the user turns it on', async () => {
     render(<App />);
     const btn = screen.getByRole('button', { name: /Sound off/ });
