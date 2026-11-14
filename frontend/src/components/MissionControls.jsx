@@ -45,7 +45,7 @@ export function Fingerprint({ reference }) {
 
 export default function MissionControls({
   body, profile, mode, excludeKnown, reference, pin, pinPending, pinError, sources,
-  onBody, onProfile, onMode, onExcludeKnown, onPlace, onUseCurated, onSearch,
+  onBody, onProfile, onMode, onExcludeKnown, onPlace, onUseCurated, onSearch, experiment, onChangeExperiment,
 }) {
   const preview = assetUrl(reference?.preview_url);
   const refSources = (reference?.source_ids || []).map((id) => sources.find((s) => s.id === id)).filter(Boolean);
@@ -54,7 +54,15 @@ export default function MissionControls({
 
   return (
     <div className="panel-section">
+      <p className="kicker">Scene 2 · On {body === 'mars' ? 'Mars' : 'the Moon'}</p>
       <h2>Mission</h2>
+      {experiment && (
+        <div className="experiment-chip">
+          <span aria-hidden="true">{experiment.icon}</span>
+          <span><b>{experiment.title}</b><br /><span className="small muted">{PROFILES[experiment.profile].label} profile</span></span>
+          {onChangeExperiment && <button className="btn small ghost" onClick={onChangeExperiment}>Change</button>}
+        </div>
+      )}
       <p className="muted">Pick a place on the {body === 'mars' ? 'Mars' : 'Moon'} globe, check its measured terrain,
         then search Earth for the closest terrain windows.</p>
 
@@ -137,7 +145,7 @@ export default function MissionControls({
           on, so nothing is learned; every result can be explained metric by metric.</p>
       </details>
 
-      <button className="btn primary block" onClick={onSearch} disabled={!canSearch}>
+      <button className="btn primary block big" onClick={onSearch} disabled={!canSearch} data-sound="confirm">
         {mode === 'global' ? 'Search all Earth land' : 'Search the 3 curated regions'}
       </button>
     </div>

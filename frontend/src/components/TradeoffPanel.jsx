@@ -71,6 +71,7 @@ export default function TradeoffPanel({
 
   return (
     <div className="panel-section">
+      <p className="kicker">Scene 4 · Tradeoffs</p>
       <h2>Why this location? Why not the alternative?</h2>
       {error && <p className="error" role="alert">{friendlyMessage(error)}</p>}
       {notice && <p className="notice" role="alert">{notice}</p>}
