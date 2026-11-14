@@ -252,6 +252,25 @@ export const mockApi = {
     return mockApi.getCandidate(id, o);
   },
 
+  // DEMO climate: synthetic, clearly flagged; real values come from NASA POWER via the backend.
+  async getClimate({ lat, lon }, { signal } = {}) {
+    await wait(signal);
+    const desertBelt = Math.abs(lat) >= 15 && Math.abs(lat) <= 38;
+    const precip = desertBelt ? 120 : 820;
+    return {
+      schema_version: SCHEMA_VERSION,
+      item: {
+        lat, lon, is_demo: true,
+        temperature_mean_c: desertBelt ? 24.0 : 9.0, temperature_max_c: desertBelt ? 46.0 : 31.0,
+        temperature_min_c: desertBelt ? 2.0 : -18.0, precipitation_mm_per_year: precip,
+        wind_speed_10m_m_s: 4.0, solar_kwh_m2_day: desertBelt ? 6.2 : 3.9,
+        aridity: desertBelt ? { key: 'arid', label: 'Arid (< 250 mm/yr)' } : { key: 'wet', label: 'Wet (>= 500 mm/yr): likely vegetated' },
+        source: { name: 'DEMO climate (synthetic)', datasets: ['DEMO'], period: 'n/a', resolution: 'n/a',
+          kind: 'synthetic demo values, not measurements', url: 'https://power.larc.nasa.gov/' },
+      },
+    };
+  },
+
   async postDecision(body, { signal } = {}) {
     await wait(signal);
     const { reference_id, profile, slope_weight = null, selected_candidate_id, alternative_candidate_id = null } = body;

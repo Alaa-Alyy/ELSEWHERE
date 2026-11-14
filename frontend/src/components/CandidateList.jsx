@@ -1,5 +1,6 @@
 import { fmt, parentName } from '../format.js';
 import { friendlyMessage } from '../api/errors.js';
+import { isMountainous, rainUncertain } from '../analogFacts.js';
 
 const METRIC_LABEL = { slope: 'Slope mix', relief: 'Relief', variation: 'Roughness' };
 const METRIC_HELP = {
@@ -57,7 +58,26 @@ function place(it, ranking, parents) {
   return parentName(parents, it.parent_id);
 }
 
-export default function CandidateList({ ranking, pending, error, parents, selectedId, notice, onSelect, onBack, onNext, experiment }) {
+// Climate chip (NASA POWER, context only - never part of the index).
+function ClimateChip({ climate, mountainous: steep }) {
+  if (!climate) return null;
+  if (climate.pending) return <span className="chip clim">climate...</span>;
+  if (climate.error) return <span className="chip clim">climate unavailable</span>;
+  const c = climate.item;
+  const k = c?.aridity?.key;
+  const mountainous = rainUncertain(steep, c?.precipitation_mm_per_year);
+  const icon = mountainous ? '⛰️' : k === 'arid' ? '🏜️' : k === 'semi_arid' ? '🌾' : k === 'wet' ? '🌧️' : '❔';
+  const word = mountainous ? 'Rain uncertain (mountains)'
+    : k === 'arid' ? 'Arid' : k === 'semi_arid' ? 'Semi-arid' : k === 'wet' ? 'Wet ⚠' : 'Unknown';
+  return (
+    <span className={`chip clim ${mountainous ? '' : k || ''}`}
+      title={`NASA POWER climatology (~50 km)${c?.is_demo ? ' (DEMO)' : ''}: ${c?.aridity?.label}${mountainous ? '; low confidence in steep mountains' : ''}`}>
+      {icon} {word} · {fmt(c?.precipitation_mm_per_year, 0)} mm/yr · {fmt(c?.temperature_mean_c, 0)} °C
+    </span>
+  );
+}
+
+export default function CandidateList({ ranking, pending, error, parents, selectedId, notice, onSelect, onBack, onNext, experiment, climateById = {}, detailsById = {} }) {
   const items = ranking?.items || [];
   return (
     <div className="panel-section">
@@ -120,6 +140,7 @@ export default function CandidateList({ ranking, pending, error, parents, select
                 <span className="chips">
                   {best && <span className="chip good">Closest on {METRIC_LABEL[best].toLowerCase()}</span>}
                   {gap && <span className="chip gap">Biggest gap: {METRIC_LABEL[gap].toLowerCase()}</span>}
+                  <ClimateChip climate={climateById[it.candidate_id]} mountainous={isMountainous(detailsById[it.candidate_id]?.item?.metrics)} />
                 </span>
                 <span className="card-id">{it.candidate_id}</span>
                 <span className="card-score">

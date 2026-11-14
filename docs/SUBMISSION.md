@@ -43,7 +43,12 @@ variation.
 - Global discovery uses ~1 km Earth data (SRTMGL30) and covers 56°S-60°N only; local height variation is
   biased low vs 30 m data. Being outside our known-analog list is not evidence of a new discovery.
 
-- Terrain only, at kilometre scale. Soil/regolith, temperature, illumination, ice, biology, gravity,
+- Climate context (temperature, precipitation, wind, sunlight) comes from NASA POWER, a ~50 km modelled
+  climatology, not stations. It is shown per Earth window but never enters the similarity index. In steep
+  mountains (window relief > 1000 m) mid-range precipitation (250-1500 mm/yr) is flagged "uncertain"; e.g. a
+  Puna window reads 749 mm/yr on the grid while the plateau itself is far drier. Mars/Moon climate rows use
+  planet-wide fact-sheet values, not site measurements.
+- Terrain similarity is computed on shape only, at kilometre scale. Soil/regolith, temperature, illumination, ice, biology, gravity,
   radiation, atmosphere, access and permits are not established.
 - Curated mode searches only 3 Earth regions. In both modes results are the closest available windows,
   not a "best analog" and not previously unknown discoveries.
@@ -58,6 +63,8 @@ variation.
 - NASA JPL (2013). SRTM Global 30 arc second, SRTMGL30 v002. doi:10.5067/MEaSUREs/SRTM/SRTMGL30.002
 - Smith, D.E., et al. (2010), LOLA, Space Sci. Rev. 150; LRO LOLA GDR LDEM_64, NASA PDS Geosciences Node
 - Display imagery: NASA EOSDIS GIBS / Worldview, Blue Marble Shaded Relief and Bathymetry
+- NASA POWER Climatology API v2.10.1 (MERRA-2, CERES SYN1deg; 2001-2025), https://power.larc.nasa.gov/ - Earth climate context per window
+- NASA GSFC Planetary Fact Sheets (Mars, Moon, Earth body-wide values), https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 - Display imagery: NASA Solar System Treks (Mars Trek Viking MDIM 2.1 colour mosaic; Moon Trek LRO WAC mosaic)
 - Sounds: CC0 packs by Kenney and a CC0 ambient track by "yd" via OpenGameArt (`frontend/public/audio/CREDITS.md`)
 

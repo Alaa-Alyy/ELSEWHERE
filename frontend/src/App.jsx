@@ -109,6 +109,27 @@ export default function App() {
     return () => ctrl.abort();
   }, [itemIds]);
 
+  // ---- Earth climate context per displayed window (NASA POWER via backend). Context only, never scored.
+  // Requests are keyed by window id and never cancelled mid-flight (a result for an id stays valid).
+  const [climateById, setClimateById] = useState({});
+  const climateAsked = useRef(new Set());
+  useEffect(() => {
+    const items = state.ranking?.items || [];
+    items.forEach((it) => {
+      const id = it.candidate_id;
+      const c = it.center || state.candidateDetailsById[id]?.item?.center;
+      if (!c || climateAsked.current.has(id)) return;
+      climateAsked.current.add(id);
+      setClimateById((m) => ({ ...m, [id]: { pending: true } }));
+      api.getClimate({ lat: c.lat, lon: c.lon })
+        .then((r) => setClimateById((m) => ({ ...m, [id]: { item: r.item } })))
+        .catch((error) => {
+          climateAsked.current.delete(id);                 // allow a retry on the next result update
+          setClimateById((m) => ({ ...m, [id]: { error } }));
+        });
+    });
+  }, [state.ranking, state.candidateDetailsById]);
+
   const reference = state.pin && state.pin.id === state.referenceId
     ? state.pin
     : references.find((r) => r.id === state.referenceId) || null;
@@ -290,6 +311,8 @@ export default function App() {
               <>
                 <CandidateList
                   experiment={experiment}
+                  climateById={climateById}
+                  detailsById={state.candidateDetailsById}
                   ranking={state.ranking}
                   pending={state.rankingPending}
                   error={state.error}
@@ -303,7 +326,7 @@ export default function App() {
                 {selectedDetails && (
                   <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
                     onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
-                    rankItem={selectedItem} mode={state.ranking?.mode} />
+                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]} />
                 )}
               </>
             )}
@@ -329,7 +352,7 @@ export default function App() {
                 {selectedDetails && (
                   <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
                     onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
-                    rankItem={selectedItem} mode={state.ranking?.mode} />
+                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]} />
                 )}
               </>
             )}

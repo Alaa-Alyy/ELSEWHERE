@@ -80,6 +80,8 @@ export const realApi = {
   getDiscover: ({ reference_id, profile, slope_weight = null, top_k = 5, min_center_distance_km = 100, exclude_known = false }, o = {}) =>
     request('/api/discover', { ...o, timeoutMs: 60000, query: { reference_id, profile, slope_weight, top_k, min_center_distance_km, exclude_known } }),
   getGlobalCandidate: (id, o = {}) => request(`/api/global-candidates/${encodeURIComponent(id)}`, o),
+  // Earth climate context (NASA POWER via the backend; POWER sends no CORS headers). Never scored.
+  getClimate: ({ lat, lon }, o = {}) => request('/api/climate', { ...o, timeoutMs: 30000, query: { lat, lon } }),
 };
 
 // Only send discovery fields in global mode; curated requests keep the original v2 body.
@@ -99,7 +101,7 @@ function impl() {
 }
 
 const METHODS = ['getHealth', 'getReferences', 'getParents', 'getSources', 'getCandidate', 'getRankings', 'postDecision',
-  'postChat', 'createPin', 'getDiscover', 'getGlobalCandidate'];
+  'postChat', 'createPin', 'getDiscover', 'getGlobalCandidate', 'getClimate'];
 export const api = Object.fromEntries(
   METHODS.map((m) => [m, (...args) => impl().then((i) => i[m](...args))]),
 );

@@ -237,6 +237,50 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(card).toHaveTextContent(/Not assessed in this version/);
   });
 
+  it('climate: one NASA POWER request per result, shown on cards and in the scorecard, never sent back', async () => {
+    const climSpy = vi.spyOn(mockApi, 'getClimate');
+    const decSpy = vi.spyOn(mockApi, 'postDecision');
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    await waitFor(() => expect(climSpy).toHaveBeenCalledTimes(cardIds().length));
+    expect(await screen.findAllByText(/mm\/yr/)).not.toHaveLength(0);
+    const card = await screen.findByTestId('analog-scorecard');
+    await waitFor(() => expect(within(card).getByText('Dryness')).toBeInTheDocument());
+    expect(card).toHaveTextContent(/DEMO values/);                 // fixture climate is labelled
+    expect(within(card).getByText('Temperature').closest('tr')).toHaveTextContent('Different');
+    // decision request is unchanged: no climate fields
+    await userEvent.click(screen.getByRole('button', { name: 'Compare tradeoffs' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Go to decision' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm my choice' }));
+    await screen.findByTestId('decision-record');
+    expect(JSON.stringify(decSpy.mock.calls.at(-1)[0])).not.toMatch(/climate|precip|aridity/);
+  });
+
+  it('dryness verdict: arid/wet, and "uncertain" over steep mountains (coarse climate grid)', async () => {
+    const { drynessVerdict, isMountainous } = await import('../../frontend/src/analogFacts.js');
+    expect(drynessVerdict('arid').key).toBe('similar');
+    expect(drynessVerdict('wet').key).toBe('different');
+    expect(drynessVerdict('semi_arid').key).toBe('partly');
+    expect(drynessVerdict('wet', true, 749).label).toBe('Uncertain (mountains)');   // Puna-like mixed cell
+    expect(drynessVerdict('wet', true, 2560).key).toBe('different');               // too wet to be a mix-up
+    expect(drynessVerdict('arid', true, 120).key).toBe('similar');
+    expect(drynessVerdict(undefined).key).toBe('na');                 // missing data is not "dry"
+    expect(isMountainous({ relief_p95_p05_m: 2349 })).toBe(true);
+    expect(isMountainous({ relief_p95_p05_m: 674 })).toBe(false);
+    expect(isMountainous(undefined)).toBe(false);
+  });
+
+  it('climate failure shows a notice and leaves results intact', async () => {
+    vi.spyOn(mockApi, 'getClimate').mockRejectedValue(Object.assign(new Error('down'), { code: 'climate_unavailable', retryable: true }));
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    const card = await screen.findByTestId('analog-scorecard');
+    await waitFor(() => expect(card).toHaveTextContent(/Climate unavailable/));
+    expect(card).toHaveTextContent(/Very similar|Similar|Partly similar|Different/);
+  });
+
   it('scorecard for the Moon: day length is different, vacuum stated', async () => {
     render(<App />);
     await startMission('Moon');
