@@ -99,7 +99,9 @@ export default function AnalogScorecard({ reference, candidate, rankItem, mode, 
                   <th scope="row">Temperature</th>
                   <td>{bc.temperature}</td>
                   <td>{fmt(cl.temperature_mean_c, 1)} °C mean<span className="cell-note">extremes {fmt(cl.temperature_min_c, 0)} to {fmt(cl.temperature_max_c, 0)} °C</span></td>
-                  <td><Verdict band={{ key: 'different', label: 'Different' }} /><span className="cell-note">No Earth site in this search is as cold on average.</span></td>
+                  <td><Verdict band={{ key: 'different', label: 'Different' }} /><span className="cell-note">{body === 'moon'
+                    ? 'No Earth site has a ~300 °C day-night swing.'
+                    : 'No Earth site in this search is as cold on average.'}</span></td>
                 </tr>
                 <tr>
                   <th scope="row">Dryness</th>

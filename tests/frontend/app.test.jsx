@@ -281,6 +281,20 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(card).toHaveTextContent(/Very similar|Similar|Partly similar|Different/);
   });
 
+  it('scores show two decimals and a "why so high" explanation, exactly the server value', async () => {
+    const discSpy = vi.spyOn(mockApi, 'getDiscover');
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    const item = (await discSpy.mock.results.at(-1).value).items[0];
+    const first = document.querySelector(`[data-candidate-id="${item.candidate_id}"]`);
+    expect(first).toHaveTextContent(`Terrain similarity index ${item.score.toFixed(2)} / 100`);
+    expect(first.querySelector('.ring-num').textContent).toBe(item.score.toFixed(2));
+    const why = screen.getByTestId('why-high');
+    expect(why).toHaveTextContent(/100 × \(1 − D\)/);
+    expect(why).toHaveTextContent(/not a percentage or a probability/);
+  });
+
   it('scorecard for the Moon: day length is different, vacuum stated', async () => {
     render(<App />);
     await startMission('Moon');

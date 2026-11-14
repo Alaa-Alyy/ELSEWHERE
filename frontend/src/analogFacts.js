@@ -78,6 +78,7 @@ export const NOT_ASSESSED = [
   'Dust and erosion processes (wind speed is shown only as context)',
   'Biology and habitability (precipitation is only a proxy for vegetation)',
   'Caves, lava tubes and the subsurface',
+  'Land use and access (cities, farms, protected areas, permits) - check every result on imagery',
 ];
 
 // Display bands for a server distance (0 = identical, 1 = maximally different).

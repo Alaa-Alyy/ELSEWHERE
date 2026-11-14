@@ -187,7 +187,10 @@ h3 { font-size: 1.05rem; }
 .ring-track { fill: none; stroke: rgba(255, 255, 255, .08); stroke-width: 6; }
 .ring-value { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dasharray .8s ease; }
 .card:not(.selected) .ring-value { stroke: var(--alt); }
-.ring-num { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; }
+.ring-num { font-family: var(--font-head); font-weight: 700; font-size: .82rem; letter-spacing: -.02em; }
+.why-high { background: rgba(255, 255, 255, .03); border: 1px solid var(--line); border-radius: 10px; padding: .45rem .7rem; }
+.why-high summary { cursor: pointer; color: var(--alt); font-weight: 600; }
+.why-high p { margin: .45rem 0 0; color: var(--text); }
 .metric-bars { display: grid; gap: .25rem; }
 .mbar { display: grid; grid-template-columns: 5.2rem 1fr 2rem; gap: .5rem; align-items: center; font-size: .76rem; color: var(--muted); }
 .mbar-val { text-align: right; color: var(--text); }
