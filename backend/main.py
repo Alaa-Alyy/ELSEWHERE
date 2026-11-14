@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .chat_service import ChatService, ChatUnavailable
+from .climate_service import ClimateService, ClimateUnavailable
 from .config import Settings
 from .data_repository import DataRepository
 from .decision_service import build_decision
@@ -35,12 +36,13 @@ def error(status: int, code: str, message: str, retryable: bool = False) -> JSON
     return JSONResponse(status_code=status, content={"error": {"code": code, "message": message, "retryable": retryable}})
 
 
-def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
+def create_app(settings: Settings | None = None, chat_client=None, climate_fetch=None) -> FastAPI:
     settings = settings or Settings.from_env()
     repo = DataRepository(settings)
     search = SearchAdapter(settings)
     chat = ChatService(settings, client=chat_client)
     discovery = DiscoveryService(repo)
+    climate = ClimateService(fetch=climate_fetch)
 
     app = FastAPI(title="MissionMatch API", version="2.0.0")
     app.state.settings, app.state.repo, app.state.search, app.state.chat = settings, repo, search, chat
@@ -61,6 +63,10 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
     @app.exception_handler(DiscoveryUnavailable)
     async def _discovery_error(_: Request, exc: DiscoveryUnavailable):
         return error(503, "discovery_unavailable", str(exc), True)
+
+    @app.exception_handler(ClimateUnavailable)
+    async def _climate_error(_: Request, exc: ClimateUnavailable):
+        return error(502, "climate_unavailable", str(exc), True)
 
     @app.exception_handler(ChatUnavailable)
     async def _chat_error(_: Request, exc: ChatUnavailable):
@@ -155,6 +161,14 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
         return discovery.candidate(candidate_id)
 
     # ---------------------------------------------------------------- decision + chat
+    # Earth climate context (NASA POWER). Context only, never part of the similarity score.
+    @app.get("/api/climate")
+    def climate_endpoint(
+        lat: float = Query(..., ge=-90.0, le=90.0, allow_inf_nan=False),
+        lon: float = Query(..., ge=-180.0, le=180.0, allow_inf_nan=False),
+    ):
+        return {"schema_version": SCHEMA_VERSION, "item": climate.get(lat, lon)}
+
     @app.post("/api/decision")
     def decision(req: DecisionRequest):
         if req.mode == "global":

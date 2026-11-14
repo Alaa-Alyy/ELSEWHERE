@@ -1,5 +1,9 @@
 import { fmt } from '../format.js';
-import { BODY_FACTS, ENVIRONMENT_ROWS, FACT_SOURCE, NOT_ASSESSED, closenessBand } from '../analogFacts.js';
+import {
+  BODY_CLIMATE, BODY_FACTS, ENVIRONMENT_ROWS, FACT_SOURCE, NOT_ASSESSED, closenessBand, drynessVerdict,
+  isMountainous, MOUNTAIN_RELIEF_M,
+} from '../analogFacts.js';
+import { friendlyMessage } from '../api/errors.js';
 
 const BODY_NAME = { mars: 'Mars', moon: 'Moon' };
 
@@ -17,7 +21,7 @@ function Verdict({ band }) {
  * Terrain rows: measured values (same pipeline) + the SERVER's per-metric distances.
  * Environment rows: body-wide NASA fact-sheet values. Unmeasured dimensions are listed, never guessed.
  */
-export default function AnalogScorecard({ reference, candidate, rankItem, mode }) {
+export default function AnalogScorecard({ reference, candidate, rankItem, mode, climate }) {
   const body = reference?.body;
   const t = reference?.metrics;
   const m = candidate?.metrics;
@@ -47,6 +51,13 @@ export default function AnalogScorecard({ reference, candidate, rankItem, mode }
   const env = ENVIRONMENT_ROWS.map((r) => ({ ...r, v: r.verdict(body) }));
   const envSimilar = env.filter((r) => r.v === 'similar').map((r) => r.label.toLowerCase());
   const envDifferent = env.filter((r) => r.v === 'different').map((r) => r.label.toLowerCase());
+  const cl = climate?.item;
+  const mountains = isMountainous(m);
+  const dry = cl ? drynessVerdict(cl.aridity?.key, mountains, cl.precipitation_mm_per_year) : null;
+  if (dry?.key === 'similar') envSimilar.push('dryness');
+  if (dry?.key === 'different') envDifferent.push(`dryness (wet, ${fmt(cl.precipitation_mm_per_year, 0)} mm/yr)`);
+  if (cl) envDifferent.push('temperature');
+  const bc = BODY_CLIMATE[body];
 
   return (
     <section className="scorecard" aria-labelledby="scorecard-title" data-testid="analog-scorecard">
@@ -54,7 +65,8 @@ export default function AnalogScorecard({ reference, candidate, rankItem, mode }
       <p className="scorecard-summary">
         <b>Similar:</b> {terrainSimilar} of 3 terrain metrics{envSimilar.length ? `, ${envSimilar.join(', ')}` : ''}.{' '}
         <b>Different:</b> {envDifferent.join(', ')}.{' '}
-        <span className="muted">An analog does not have to match everything; this one is a terrain analog.</span>
+        <span className="muted">An analog does not have to match everything; {dry?.key === 'similar'
+          ? 'this one is a terrain and dryness analog.' : 'this one is a terrain analog.'}</span>
       </p>
 
       <div className="table-scroll">
@@ -75,6 +87,48 @@ export default function AnalogScorecard({ reference, candidate, rankItem, mode }
                 </td>
               </tr>
             ))}
+            <tr className="group"><th colSpan={4} scope="colgroup">
+              Climate - Earth side measured for this window (NASA POWER){cl?.is_demo ? ' - DEMO values' : ''}; {where} side planet-wide
+            </th></tr>
+            {climate?.pending && <tr><td colSpan={4} className="pending">Loading NASA POWER climate...</td></tr>}
+            {climate?.error && <tr><td colSpan={4} className="notice small">Climate unavailable: {friendlyMessage(climate.error)}. Terrain results are unaffected.</td></tr>}
+            {!climate && <tr><td colSpan={4} className="muted small">No climate requested for this window.</td></tr>}
+            {cl && (
+              <>
+                <tr>
+                  <th scope="row">Temperature</th>
+                  <td>{bc.temperature}</td>
+                  <td>{fmt(cl.temperature_mean_c, 1)} °C mean<span className="cell-note">extremes {fmt(cl.temperature_min_c, 0)} to {fmt(cl.temperature_max_c, 0)} °C</span></td>
+                  <td><Verdict band={{ key: 'different', label: 'Different' }} /><span className="cell-note">No Earth site in this search is as cold on average.</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Dryness</th>
+                  <td>{bc.dryness}</td>
+                  <td>{fmt(cl.precipitation_mm_per_year, 0)} mm/yr<span className="cell-note">{cl.aridity?.label}</span></td>
+                  <td><Verdict band={dry} />
+                    {dry.key === 'different' && <span className="cell-note">Likely vegetated: a terrain analog only.</span>}
+                    {dry.key === 'na' && mountains && <span className="cell-note">⚠ Low confidence: window relief {fmt(m.relief_p95_p05_m, 0)} m &gt; {MOUNTAIN_RELIEF_M} m;
+                      a ~50 km climate grid can mix dry plateaus with wet slopes, giving mid-range values like this.</span>}
+                    {dry.key !== 'na' && mountains && <span className="cell-note">Mountainous window: value is a ~50 km average.</span>}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Sunlight</th>
+                  <td>{bc.sunlight}</td>
+                  <td>{fmt(cl.solar_kwh_m2_day, 2)} kWh/m²/day at the surface</td>
+                  <td><Verdict band={{ key: 'na', label: 'Context' }} /><span className="cell-note">Relevant for solar power tests.</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Wind</th>
+                  <td>{bc.wind}</td>
+                  <td>{fmt(cl.wind_speed_10m_m_s, 1)} m/s mean at 10 m</td>
+                  <td><Verdict band={{ key: 'na', label: 'Context' }} /><span className="cell-note">Dust and erosion tests.</span></td>
+                </tr>
+                <tr className="source-row"><td colSpan={4} className="cell-note">
+                  Earth climate: {cl.source?.name}{cl.source?.api_version ? ` ${cl.source.api_version}` : ''} ({(cl.source?.datasets || []).join(', ')}),
+                  {' '}{cl.source?.period}; {cl.source?.resolution}; {cl.source?.kind}. Context only - never part of the similarity index.
+                </td></tr>
+              </>
+            )}
             <tr className="group"><th colSpan={4} scope="colgroup">Environment - planet-wide facts (not site measurements)</th></tr>
             {env.map((r) => (
               <tr key={r.key}>

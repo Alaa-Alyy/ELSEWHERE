@@ -198,6 +198,11 @@ h3 { font-size: 1.05rem; }
 .chip { font-size: .72rem; padding: .12rem .5rem; border-radius: 999px; border: 1px solid; }
 .chip.good { color: var(--good); border-color: rgba(125, 255, 176, .4); background: rgba(125, 255, 176, .06); }
 .chip.gap { color: #ffb4a0; border-color: rgba(255, 140, 110, .35); background: rgba(255, 120, 90, .06); }
+.chip.clim { color: var(--muted); border-color: var(--line); }
+.chip.clim.arid { color: #ffd9a0; border-color: rgba(255, 200, 120, .45); background: rgba(255, 190, 100, .07); }
+.chip.clim.semi_arid { color: var(--notice); border-color: rgba(255, 224, 138, .35); }
+.chip.clim.wet { color: #9fd8ff; border-color: rgba(120, 190, 255, .45); background: rgba(100, 170, 255, .07); }
+.scorecard-table tr.source-row td { border-bottom: none; }
 
 .slider-box { background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); padding: .65rem .8rem; display: grid; gap: .35rem; }
 .slider-box input[type=range] { width: 100%; accent-color: var(--accent); }
