@@ -264,6 +264,24 @@ thead th { color: var(--muted); font-weight: 500; }
 .mc-astro { font-size: 2.2rem; animation: float 3s ease-in-out infinite; }
 [data-testid="decision-record"]:focus { outline: none; }
 
+/* ---------- analog scorecard: what is similar / different ---------- */
+.scorecard {
+  display: grid; gap: .55rem; padding: .8rem; border-radius: var(--radius);
+  background: linear-gradient(160deg, rgba(94, 231, 255, .07), rgba(10, 16, 36, .7)); border: 1px solid rgba(94, 231, 255, .3);
+}
+.scorecard h3 { font-size: 1rem; margin: 0; }
+.scorecard-summary { margin: 0; font-size: .88rem; }
+.table-scroll { overflow-x: auto; }
+.scorecard-table td, .scorecard-table th { font-size: .8rem; }
+.scorecard-table tr.group th { color: var(--alt); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; padding-top: .6rem; }
+.cell-note { display: block; color: var(--muted); font-size: .72rem; margin-top: .15rem; }
+.verdict { display: inline-block; font-size: .72rem; font-weight: 600; padding: .1rem .45rem; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.verdict.very { color: var(--good); border-color: rgba(125, 255, 176, .5); background: rgba(125, 255, 176, .08); }
+.verdict.similar { color: #b8ffd4; border-color: rgba(125, 255, 176, .3); }
+.verdict.partly { color: var(--notice); border-color: rgba(255, 224, 138, .4); }
+.verdict.different { color: #ffb4a0; border-color: rgba(255, 140, 110, .45); background: rgba(255, 120, 90, .06); }
+.verdict.na { color: var(--muted); border-color: var(--line); }
+
 /* ---------- space hub (scenes 1-2) ---------- */
 .hub { position: absolute; inset: 0; z-index: 10; overflow: hidden; }
 .app:has(.demo-banner) .hub { top: 0; }

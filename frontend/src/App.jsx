@@ -196,6 +196,7 @@ export default function App() {
 
   const chatAvailable = health ? health.chat_available !== false : false;
   const selectedDetails = state.selectedCandidateId ? state.candidateDetailsById[state.selectedCandidateId] : null;
+  const selectedItem = (state.ranking?.items || []).find((i) => i.candidate_id === state.selectedCandidateId) || null;
 
   return (
     <div className="app">
@@ -301,7 +302,8 @@ export default function App() {
                 />
                 {selectedDetails && (
                   <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
-                    onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable} />
+                    onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
+                    rankItem={selectedItem} mode={state.ranking?.mode} />
                 )}
               </>
             )}
@@ -326,7 +328,8 @@ export default function App() {
                 />
                 {selectedDetails && (
                   <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
-                    onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable} />
+                    onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
+                    rankItem={selectedItem} mode={state.ranking?.mode} />
                 )}
               </>
             )}

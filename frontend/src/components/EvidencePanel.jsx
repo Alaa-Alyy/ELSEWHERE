@@ -2,9 +2,10 @@ import { assetUrl } from '../api/client.js';
 import { fmt, SLOPE_BIN_LABELS } from '../format.js';
 import { friendlyMessage } from '../api/errors.js';
 import SourceList from './SourceList.jsx';
+import AnalogScorecard from './AnalogScorecard.jsx';
 
 // Target (reference) vs selected candidate measured values, side by side on shared scales.
-export default function EvidencePanel({ reference, details, sources, onExplain, chatAvailable }) {
+export default function EvidencePanel({ reference, details, sources, onExplain, chatAvailable, rankItem, mode }) {
   if (details?.error) return <p className="error" role="alert">Candidate details unavailable: {friendlyMessage(details.error)}</p>;
   const c = details?.item;
   if (!c) return <p className="pending">Loading candidate evidence...</p>;
@@ -25,6 +26,8 @@ export default function EvidencePanel({ reference, details, sources, onExplain, 
           Explain this choice
         </button>
       </div>
+
+      <AnalogScorecard reference={reference} candidate={c} rankItem={rankItem} mode={mode} />
 
       <dl className="kv">
         <dt>Center (WGS84)</dt><dd>{fmt(c.center?.lat, 4)}°, {fmt(c.center?.lon, 4)}°</dd>

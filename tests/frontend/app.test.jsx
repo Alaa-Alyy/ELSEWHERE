@@ -222,6 +222,32 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(await screen.findByText(/What experiment will you run/)).toBeInTheDocument();
   });
 
+  it('scorecard: what is similar (measured terrain + server distances) and what is different', async () => {
+    const discSpy = vi.spyOn(mockApi, 'getDiscover');
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const card = await screen.findByTestId('analog-scorecard');
+    const item = (await discSpy.mock.results.at(-1).value).items[0];
+    // terrain distances shown are exactly the server's
+    expect(card).toHaveTextContent(`distance ${item.distances.relief.toFixed(3)}`);
+    expect(card).toHaveTextContent(/Slope mix/);
+    expect(card).toHaveTextContent(/0\.38 g/);                 // Mars gravity, body-wide fact
+    expect(within(card).getByText('Day length').closest('tr')).toHaveTextContent('Similar');
+    expect(within(card).getByText('Gravity').closest('tr')).toHaveTextContent('Different');
+    expect(card).toHaveTextContent(/Not assessed in this version/);
+  });
+
+  it('scorecard for the Moon: day length is different, vacuum stated', async () => {
+    render(<App />);
+    await startMission('Moon');
+    await userEvent.click(screen.getByRole('button', { name: 'Tycho crater' }));
+    await screen.findByTestId('fingerprint');
+    await userEvent.click(screen.getByRole('button', { name: 'Search all Earth land' }));
+    const card = await screen.findByTestId('analog-scorecard');
+    expect(within(card).getByText('Day length').closest('tr')).toHaveTextContent('Different');
+    expect(card).toHaveTextContent(/Near vacuum/);
+  });
+
   it('sound is off until the user turns it on', async () => {
     render(<App />);
     const btn = screen.getByRole('button', { name: /Sound off/ });
