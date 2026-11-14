@@ -3,7 +3,7 @@ import {
   Viewer, ImageryLayer, WebMapTileServiceImageryProvider, WebMercatorTilingScheme, Credit,
   Cartesian3, Cartesian2, Color, PolygonHierarchy, Rectangle, ScreenSpaceEventHandler,
   ScreenSpaceEventType, LabelStyle, VerticalOrigin, EllipsoidTerrainProvider, defined,
-  DistanceDisplayCondition, CallbackProperty, ColorMaterialProperty, NearFarScalar,
+  DistanceDisplayCondition, CallbackProperty, ColorMaterialProperty, NearFarScalar, JulianDate,
 } from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import { astronautSprite } from '../scene/astronaut.js';
@@ -109,12 +109,22 @@ export default function EarthGlobe({ parents = [], items = [], detailsById = {},
           },
         });
       }
+      // One radius per frame for BOTH axes: two separate now() calls could make the minor axis a hair
+      // larger than the major one, which Cesium rejects ("semiMajorAxis must be >= semiMinorAxis").
+      const dust = { time: null, r: 2000 };
+      const dustRadius = (time) => {
+        if (!dust.time || !JulianDate.equals(dust.time, time)) {
+          dust.time = JulianDate.clone(time, dust.time || undefined);
+          dust.r = 2000 + 30000 * Math.max(0, Math.min(1, (now() - hop.dustT0) / 900));
+        }
+        return dust.r;
+      };
       viewer.entities.add({
         id: 'mm-dust',
         position: new CallbackProperty(() => (hop.to ? Cartesian3.fromDegrees(hop.to.lon, hop.to.lat) : Cartesian3.fromDegrees(0, 0, -1e7)), false),
         ellipse: {
-          semiMajorAxis: new CallbackProperty(() => 2000 + 30000 * Math.min(1, (now() - hop.dustT0) / 900), false),
-          semiMinorAxis: new CallbackProperty(() => 2000 + 30000 * Math.min(1, (now() - hop.dustT0) / 900), false),
+          semiMajorAxis: new CallbackProperty(dustRadius, false),
+          semiMinorAxis: new CallbackProperty(dustRadius, false),
           material: new ColorMaterialProperty(new CallbackProperty(() => Color.fromCssColorString('#ffd9a8')
             .withAlpha(hop.landed && hop.dustT0 ? Math.max(0, 0.6 * (1 - (now() - hop.dustT0) / 900)) : 0), false)),
           height: 0,
