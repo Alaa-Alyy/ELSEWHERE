@@ -3,9 +3,18 @@ import {
   Viewer, ImageryLayer, WebMapTileServiceImageryProvider, WebMercatorTilingScheme, Credit,
   Cartesian3, Cartesian2, Color, PolygonHierarchy, Rectangle, ScreenSpaceEventHandler,
   ScreenSpaceEventType, LabelStyle, VerticalOrigin, EllipsoidTerrainProvider, defined,
-  DistanceDisplayCondition,
+  DistanceDisplayCondition, CallbackProperty, ColorMaterialProperty, NearFarScalar,
 } from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
+import { astronautSprite } from '../scene/astronaut.js';
+
+const easeOutBounce = (x) => {
+  const n1 = 7.5625; const d1 = 2.75;
+  if (x < 1 / d1) return n1 * x * x;
+  if (x < 2 / d1) return n1 * (x -= 1.5 / d1) * x + 0.75;
+  if (x < 2.5 / d1) return n1 * (x -= 2.25 / d1) * x + 0.9375;
+  return n1 * (x -= 2.625 / d1) * x + 0.984375;
+};
 
 // NASA GIBS (Worldview) WMTS, no token required. Display imagery only - not the analysis data.
 const GIBS_URL = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{TileMatrix}/{TileRow}/{TileCol}.jpeg';
@@ -22,13 +31,17 @@ function ringDegrees(footprint) {
   return ring.flatMap(([lon, lat]) => [lon, lat]);
 }
 
-export default function EarthGlobe({ parents = [], items = [], detailsById = {}, selectedId, alternativeId, onSelect }) {
+export default function EarthGlobe({ parents = [], items = [], detailsById = {}, selectedId, alternativeId, onSelect, landOn = null, onLanded }) {
   const containerRef = useRef(null);
   const viewerRef = useRef(null);
   const onSelectRef = useRef(onSelect);
+  const onLandedRef = useRef(onLanded);
+  // astronaut landing animation state (read by Cesium CallbackProperty every frame)
+  const hopRef = useRef({ from: null, to: null, t0: 0, dur: 1, landed: true, dustT0: 0 });
   const [imageryError, setImageryError] = useState(false);
   const [globeError, setGlobeError] = useState(null);
   onSelectRef.current = onSelect;
+  onLandedRef.current = onLanded;
 
   // ---- one Viewer for the lifetime of the component
   useEffect(() => {
@@ -66,6 +79,54 @@ export default function EarthGlobe({ parents = [], items = [], detailsById = {},
           onSelectRef.current?.(id);
         }
       }, ScreenSpaceEventType.LEFT_CLICK);
+
+      // cartoon astronaut: falls from the sky onto the chosen window, hops between windows
+      const sprite = astronautSprite();
+      const hop = hopRef.current;
+      const now = () => performance.now();
+      const progress = () => Math.max(0, Math.min(1, (now() - hop.t0) / hop.dur));
+      const where = () => {
+        if (!hop.to) return Cartesian3.fromDegrees(0, 0, -1e7);
+        const p = progress();
+        if (!hop.from) {
+          return Cartesian3.fromDegrees(hop.to.lon, hop.to.lat, 1.6e6 * (1 - easeOutBounce(p)));
+        }
+        let dlon = hop.to.lon - hop.from.lon;
+        if (dlon > 180) dlon -= 360; else if (dlon < -180) dlon += 360;
+        const e = p * p * (3 - 2 * p);
+        const span = Math.hypot(dlon, hop.to.lat - hop.from.lat);
+        const hmax = Math.min(2.5e6, 40000 * span + 60000);
+        return Cartesian3.fromDegrees(hop.from.lon + dlon * e, hop.from.lat + (hop.to.lat - hop.from.lat) * e, 4 * hmax * p * (1 - p));
+      };
+      if (sprite) {
+        viewer.entities.add({
+          id: 'mm-astronaut',
+          position: new CallbackProperty(where, false),
+          billboard: {
+            image: sprite, verticalOrigin: VerticalOrigin.BOTTOM, scale: 0.5,
+            scaleByDistance: new NearFarScalar(2.0e5, 0.75, 2.0e7, 0.35),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+        });
+      }
+      viewer.entities.add({
+        id: 'mm-dust',
+        position: new CallbackProperty(() => (hop.to ? Cartesian3.fromDegrees(hop.to.lon, hop.to.lat) : Cartesian3.fromDegrees(0, 0, -1e7)), false),
+        ellipse: {
+          semiMajorAxis: new CallbackProperty(() => 2000 + 30000 * Math.min(1, (now() - hop.dustT0) / 900), false),
+          semiMinorAxis: new CallbackProperty(() => 2000 + 30000 * Math.min(1, (now() - hop.dustT0) / 900), false),
+          material: new ColorMaterialProperty(new CallbackProperty(() => Color.fromCssColorString('#ffd9a8')
+            .withAlpha(hop.landed && hop.dustT0 ? Math.max(0, 0.6 * (1 - (now() - hop.dustT0) / 900)) : 0), false)),
+          height: 0,
+        },
+      });
+      viewer.scene.postRender.addEventListener(() => {
+        if (!hop.landed && hop.to && progress() >= 1) {
+          hop.landed = true;
+          hop.dustT0 = now();
+          onLandedRef.current?.();
+        }
+      });
       viewerRef.current = viewer;
     } catch (err) {
       setGlobeError(err?.message || 'WebGL not available');
@@ -109,6 +170,7 @@ export default function EarthGlobe({ parents = [], items = [], detailsById = {},
     for (const e of [...viewer.entities.values]) {
       if (e.id.startsWith('earth-') && !wanted.has(e.id)) viewer.entities.remove(e);
     }
+    if (!items.length) hopRef.current.to = null;
     items.forEach((it, idx) => {
       const rec = detailsById[it.candidate_id]?.item;
       const deg = ringDegrees(rec?.footprint);
@@ -130,9 +192,9 @@ export default function EarthGlobe({ parents = [], items = [], detailsById = {},
         position: Cartesian3.fromDegrees(rec.center.lon, rec.center.lat),
         point: { pixelSize: isSel ? 10 : 7, color, outlineColor: Color.BLACK, outlineWidth: 1 },
         label: {
-          text: `#${idx + 1}${role}`, font: '14px sans-serif', fillColor: color,
+          text: `#${idx + 1}${role}`, font: '600 14px sans-serif', fillColor: color,
           style: LabelStyle.FILL_AND_OUTLINE, outlineWidth: 3, outlineColor: Color.BLACK,
-          verticalOrigin: VerticalOrigin.BOTTOM, pixelOffset: new Cartesian2(0, -14),
+          verticalOrigin: VerticalOrigin.TOP, pixelOffset: new Cartesian2(0, 12),   // below, so the astronaut stays clear
         },
       });
     });
@@ -152,7 +214,7 @@ export default function EarthGlobe({ parents = [], items = [], detailsById = {},
     if (!pts.length) return;
     const lons = pts.map((p) => p[0]);
     const lats = pts.map((p) => p[1]);
-    const pad = selectedId ? 0.25 : 1.5;
+    const pad = selectedId ? 1.1 : 1.5;   // show the window in its landscape context (imagery is ~1 km)
     const w = Math.min(...lons); const e = Math.max(...lons);
     const s = Math.min(...lats); const n = Math.max(...lats);
     const duration = reduceMotion() ? 0 : 1.5;
@@ -164,6 +226,22 @@ export default function EarthGlobe({ parents = [], items = [], detailsById = {},
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flyKey, flyReady]);
+
+  // ---- astronaut lands on `landOn` (first time: falls from the sky; afterwards: hops)
+  const landCenter = landOn ? (detailsById[landOn]?.item?.center || items.find((i) => i.candidate_id === landOn)?.center) : null;
+  const landKey = landOn && landCenter ? `${landOn}@${landCenter.lat},${landCenter.lon}` : null;
+  useEffect(() => {
+    if (!landKey) return;
+    const hop = hopRef.current;
+    const instant = reduceMotion();
+    hop.from = hop.to && hop.landed ? hop.to : null;
+    hop.to = { lat: landCenter.lat, lon: landCenter.lon };
+    hop.dur = instant ? 1 : hop.from ? 1500 : 1900;
+    hop.t0 = performance.now() + (instant ? 0 : hop.from ? 250 : 600);
+    hop.landed = false;
+    hop.dustT0 = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [landKey]);
 
   return (
     <div className="globe-wrap">

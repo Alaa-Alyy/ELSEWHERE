@@ -58,7 +58,8 @@ variation.
 - NASA JPL (2013). SRTM Global 30 arc second, SRTMGL30 v002. doi:10.5067/MEaSUREs/SRTM/SRTMGL30.002
 - Smith, D.E., et al. (2010), LOLA, Space Sci. Rev. 150; LRO LOLA GDR LDEM_64, NASA PDS Geosciences Node
 - Display imagery: NASA EOSDIS GIBS / Worldview, Blue Marble Shaded Relief and Bathymetry
-- Display imagery: NASA Solar System Treks (Mars Trek MOLA colour shaded relief; Moon Trek LRO WAC mosaic)
+- Display imagery: NASA Solar System Treks (Mars Trek Viking MDIM 2.1 colour mosaic; Moon Trek LRO WAC mosaic)
+- Sounds: CC0 packs by Kenney and a CC0 ambient track by "yd" via OpenGameArt (`frontend/public/audio/CREDITS.md`)
 
 ## AI disclosure
 

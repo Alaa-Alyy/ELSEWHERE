@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { api, USE_FIXTURES } from './api/client.js';
 import { isAbort } from './api/errors.js';
 import { contextKey, initialState, reducer } from './state.js';
-import Intro from './components/Intro.jsx';
+import Hub from './components/Hub.jsx';
+import ExperimentPicker from './components/ExperimentPicker.jsx';
+import TravelOverlay from './components/TravelOverlay.jsx';
+import SoundToggle from './components/SoundToggle.jsx';
+import { sound, useUiSounds } from './sound.js';
 import MissionControls from './components/MissionControls.jsx';
 import EarthGlobe from './components/EarthGlobe.jsx';
 import PlanetGlobe from './components/PlanetGlobe.jsx';
@@ -31,8 +35,14 @@ export default function App() {
   const [health, setHealth] = useState(null);
   const [bootError, setBootError] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  // presentation-only state (never sent to the API): experiment framing, travel cut-scene, hub entry
+  const [experiment, setExperiment] = useState(null);
+  const [travel, setTravel] = useState(false);
+  const [hubStart, setHubStart] = useState('title');
+  const autoSelectRef = useRef(true);
   const stateRef = useRef(state);
   stateRef.current = state;
+  useUiSounds();
 
   // ---- one-time load of small registries
   useEffect(() => {
@@ -144,6 +154,46 @@ export default function App() {
   const go = (step) => dispatch({ type: 'GO_TO_STEP', step });
   const select = useCallback((id) => dispatch({ type: 'SELECT_CANDIDATE', id }), []);
 
+  // The astronaut lands on the best match: pre-select #1 once per search (the user can pick another).
+  useEffect(() => {
+    const items = state.ranking?.items || [];
+    if (state.step !== 'candidates' || !autoSelectRef.current || state.rankingPending || !items.length) return;
+    autoSelectRef.current = false;
+    if (!state.selectedCandidateId) select(items[0].candidate_id);
+  }, [state.step, state.ranking, state.rankingPending, state.selectedCandidateId, select]);
+
+  const startSearch = () => {
+    autoSelectRef.current = true;
+    setTravel(true);
+    go('candidates');
+  };
+  const skipIntro = () => { autoSelectRef.current = true; go('candidates'); };
+  const newMission = () => {
+    sound.play('back');
+    setExperiment(null);
+    setTravel(false);
+    setChatOpen(false);
+    setHubStart('choose');
+    autoSelectRef.current = true;
+    dispatch({ type: 'NEW_MISSION' });
+  };
+  const pickExperiment = (e) => {
+    setExperiment(e);
+    dispatch({ type: 'SET_PROFILE', profile: e.profile });
+  };
+
+  // sound cues tied to real events (no sound ever changes data)
+  const prevRef = useRef({});
+  useEffect(() => {
+    const p = prevRef.current;
+    if (state.pinPending && !p.pinPending) sound.play('scan');
+    if (state.pin && state.pin !== p.pin) sound.play('confirm');
+    if (state.pinError && state.pinError !== p.pinError) sound.play('error');
+    if (state.decisionSnapshot && state.decisionSnapshot !== p.decisionSnapshot) sound.play('success');
+    if (state.error && state.error !== p.error) sound.play('error');
+    prevRef.current = { pinPending: state.pinPending, pin: state.pin, pinError: state.pinError, decisionSnapshot: state.decisionSnapshot, error: state.error };
+  }, [state.pinPending, state.pin, state.pinError, state.decisionSnapshot, state.error]);
+
   const chatAvailable = health ? health.chat_available !== false : false;
   const selectedDetails = state.selectedCandidateId ? state.candidateDetailsById[state.selectedCandidateId] : null;
 
@@ -156,15 +206,31 @@ export default function App() {
       )}
 
       <header className="topbar">
-        <span className="brand">MissionMatch</span>
+        <span className="brand"><span className="brand-mark" aria-hidden="true">◉</span> MissionMatch</span>
         {state.step !== 'intro' && <ProgressSteps step={state.step} onGo={go} canGo={{
           candidates: true,
           tradeoffs: !!state.selectedCandidateId,
           decision: !!state.selectedCandidateId,
         }} />}
+        <span className="topbar-right">
+          {state.step !== 'intro' && (
+            <button className="btn small ghost" onClick={newMission} data-silent>🚀 New mission</button>
+          )}
+          <SoundToggle />
+        </span>
       </header>
 
-      <main className={`layout ${state.step === 'intro' ? 'no-panel' : ''}`}>
+      {state.step === 'intro' && (
+        <Hub
+          key={hubStart}
+          startAt={hubStart}
+          onSkip={skipIntro}
+          onPick={(body) => { dispatch({ type: 'SET_BODY', body }); go('mission'); }}
+        />
+      )}
+
+      {state.step !== 'intro' && (
+      <main className="layout">
         {state.step === 'mission' ? (
           <section className="globe-area" aria-label={`${state.body} globe`}>
             <PlanetGlobe
@@ -174,6 +240,7 @@ export default function App() {
               markers={PLACES[state.body]}
               onPick={placePin}
               disabled={state.pinPending}
+              scanning={state.pinPending}
             />
           </section>
         ) : (
@@ -185,6 +252,8 @@ export default function App() {
               selectedId={state.selectedCandidateId}
               alternativeId={state.alternativeCandidateId}
               onSelect={select}
+              landOn={travel ? null : state.selectedCandidateId}
+              onLanded={() => sound.play('land')}
             />
           </section>
         )}
@@ -210,13 +279,16 @@ export default function App() {
                 onExcludeKnown={(value) => dispatch({ type: 'SET_EXCLUDE_KNOWN', value })}
                 onPlace={placePin}
                 onUseCurated={() => dispatch({ type: 'USE_CURATED_REFERENCE' })}
-                onSearch={() => go('candidates')}
+                onSearch={startSearch}
+                experiment={experiment}
+                onChangeExperiment={() => setExperiment(null)}
               />
             )}
 
             {state.step === 'candidates' && (
               <>
                 <CandidateList
+                  experiment={experiment}
                   ranking={state.ranking}
                   pending={state.rankingPending}
                   error={state.error}
@@ -266,6 +338,8 @@ export default function App() {
                 sources={sources}
                 onConfirm={confirmDecision}
                 onBack={() => go('tradeoffs')}
+                experiment={experiment}
+                onNewMission={newMission}
               />
             )}
 
@@ -290,9 +364,13 @@ export default function App() {
           </aside>
         )}
       </main>
+      )}
 
-      {state.step === 'intro' && (
-        <Intro onStart={() => go('mission')} onSkip={() => go('candidates')} />
+      {state.step === 'mission' && !experiment && (
+        <ExperimentPicker body={state.body} onChoose={pickExperiment} />
+      )}
+      {travel && state.step === 'candidates' && (
+        <TravelOverlay from={state.body} onDone={() => setTravel(false)} />
       )}
     </div>
   );

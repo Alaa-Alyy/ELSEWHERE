@@ -86,6 +86,18 @@ export function reducer(state, action) {
     case 'GO_TO_STEP':
       return { ...state, step: action.step };
 
+    // Start over from the space hub. In-flight responses are ignored (their seq no longer matches).
+    case 'NEW_MISSION':
+      return {
+        ...initialState,
+        demoMode: state.demoMode,
+        step: 'intro',
+        pinSequence: state.pinSequence + 1,
+        requestSequence: state.requestSequence + 1,
+        decisionSequence: state.decisionSequence + 1,
+        chatSequence: state.chatSequence + 1,
+      };
+
     case 'SET_BODY': {
       if (action.body === state.body) return state;
       return {

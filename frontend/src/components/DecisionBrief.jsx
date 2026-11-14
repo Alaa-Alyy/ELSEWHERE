@@ -22,7 +22,7 @@ function ProposedTest({ test }) {
   );
 }
 
-export default function DecisionBrief({ state, reference, sources, onConfirm, onBack }) {
+export default function DecisionBrief({ state, reference, sources, onConfirm, onBack, experiment, onNewMission }) {
   const { selectedCandidateId, alternativeCandidateId, decisionSnapshot: d, decisionPending, decisionError } = state;
   const w = state.ranking?.weights;
   const recordRef = useRef(null);
@@ -31,7 +31,10 @@ export default function DecisionBrief({ state, reference, sources, onConfirm, on
 
   return (
     <div className="panel-section brief">
+      <p className="kicker">Scene 5 · Decision</p>
       <h2>Mission Decision Brief</h2>
+      {experiment && <p className="small muted">Planned experiment: <b>{experiment.title}</b> (your framing; it only set the
+        {' '}{PROFILES[experiment.profile].label.toLowerCase()} profile).</p>}
 
       {!selectedCandidateId && <p className="notice">Select a candidate window before confirming a decision.</p>}
 
@@ -55,6 +58,10 @@ export default function DecisionBrief({ state, reference, sources, onConfirm, on
 
       {d && (
         <article data-testid="decision-record" ref={recordRef} tabIndex={-1} aria-label="Mission Decision Brief record">
+          <div className="mission-complete" aria-hidden="true">
+            <span className="mc-astro">🧑‍🚀</span>
+            <span><b>Mission plan confirmed</b><br /><span className="small">A terrain lead to investigate, not a field-validated site.</span></span>
+          </div>
           <dl className="kv">
             <dt>Decision ID</dt><dd className="mono">{d.decision_id}</dd>
             <dt>Generated (UTC)</dt><dd>{d.generated_at_utc}</dd>
@@ -119,6 +126,7 @@ export default function DecisionBrief({ state, reference, sources, onConfirm, on
 
           <div className="row">
             <button className="btn ghost" onClick={() => window.print()}>Print brief</button>
+            {onNewMission && <button className="btn primary" onClick={onNewMission} data-silent>🚀 Plan another mission</button>}
           </div>
         </article>
       )}

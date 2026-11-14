@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, within, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -21,10 +21,32 @@ vi.mock('../../frontend/src/components/PlanetGlobe.jsx', () => ({
   ),
 }));
 
+// three.js scenes need WebGL too: the hub "jump" and the travel cut-scene finish immediately.
+vi.mock('../../frontend/src/components/SpaceScene.jsx', async () => {
+  const { useEffect } = await import('react');
+  return {
+    default: ({ jumpTo, onJumpDone }) => {
+      useEffect(() => { if (jumpTo) onJumpDone(jumpTo); }, [jumpTo]);
+      return <div data-testid="space-scene" />;
+    },
+  };
+});
+vi.mock('../../frontend/src/components/TravelOverlay.jsx', async () => {
+  const { useEffect } = await import('react');
+  return { default: ({ onDone }) => { useEffect(() => { onDone(); }, []); return null; } };
+});
+
 import App from '../../frontend/src/App.jsx';
 import { mockApi } from '../../frontend/src/api/mockClient.js';
 
 const cardIds = () => [...document.querySelectorAll('[data-candidate-id]')].map((b) => b.dataset.candidateId);
+
+// Hub -> destination -> experiment question -> mission screen (same actions as before, new presentation).
+async function startMission(body = 'Mars', experiment = 'Field geology training') {
+  await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
+  await userEvent.click(screen.getByRole('button', { name: `Go to ${body}` }));
+  await userEvent.click(await screen.findByRole('button', { name: new RegExp(experiment) }));
+}
 
 describe('story entry', () => {
   it('shows the exact opening sentence, question and CTA on entry', () => {
@@ -53,8 +75,7 @@ describe('fixture journey', () => {
     const rankSpy = vi.spyOn(mockApi, 'getRankings');
     const decSpy = vi.spyOn(mockApi, 'postDecision');
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
-    await userEvent.click(screen.getByRole('radio', { name: /Mars/ }));
+    await startMission('Mars');
     await userEvent.click(screen.getByRole('radio', { name: /3 curated regions/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Search the 3 curated regions' }));
 
@@ -89,8 +110,7 @@ describe('fixture journey', () => {
   it('Moon requests the lunar reference', async () => {
     const rankSpy = vi.spyOn(mockApi, 'getRankings');
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
-    await userEvent.click(screen.getByRole('radio', { name: /Moon/ }));
+    await startMission('Moon');
     await userEvent.click(screen.getByRole('radio', { name: /3 curated regions/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Search the 3 curated regions' }));
     await waitFor(() => expect(rankSpy).toHaveBeenCalled());
@@ -120,7 +140,7 @@ describe('discovery: pin anywhere, search all Earth', () => {
     const discSpy = vi.spyOn(mockApi, 'getDiscover');
     const decSpy = vi.spyOn(mockApi, 'postDecision');
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
+    await startMission('Mars');
     expect(screen.getByTestId('planet-globe').dataset.body).toBe('mars');
     await userEvent.click(screen.getByTestId('planet-click'));
     await waitFor(() => expect(pinSpy).toHaveBeenCalledWith({ body: 'mars', lat: -4.6, lon: 137.4 }));
@@ -145,8 +165,7 @@ describe('discovery: pin anywhere, search all Earth', () => {
   it('a named place pins too, and switching body clears the pin', async () => {
     const pinSpy = vi.spyOn(mockApi, 'createPin');
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
-    await userEvent.click(screen.getByRole('radio', { name: /Moon/ }));
+    await startMission('Moon');
     await userEvent.click(screen.getByRole('button', { name: 'Tycho crater' }));
     await waitFor(() => expect(pinSpy).toHaveBeenCalledWith({ body: 'moon', lat: -43.3, lon: -11.2 }));
     expect(await screen.findByText(/Pinned moon window/)).toBeInTheDocument();
@@ -156,12 +175,60 @@ describe('discovery: pin anywhere, search all Earth', () => {
 
   it('curated mode refuses a pin (only vetted references)', async () => {
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
+    await startMission('Mars');
     await userEvent.click(screen.getByTestId('planet-click'));
     await screen.findByTestId('fingerprint');
     await userEvent.click(screen.getByRole('radio', { name: /3 curated regions/ }));
     expect(screen.getByRole('button', { name: 'Search the 3 curated regions' })).not.toBeDisabled();
     expect(screen.queryByText(/Pinned mars window/)).toBeNull();   // switched back to the vetted reference
+  });
+});
+
+describe('cinematic journey (presentation only, same API calls)', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('the experiment question only chooses an existing profile', async () => {
+    const discSpy = vi.spyOn(mockApi, 'getDiscover');
+    render(<App />);
+    await startMission('Mars', 'Rover test drive');
+    expect(screen.getByRole('radio', { name: /Slope focus/ })).toBeChecked();
+    await userEvent.click(screen.getByTestId('planet-click'));
+    await screen.findByTestId('fingerprint');
+    await userEvent.click(screen.getByRole('button', { name: 'Search all Earth land' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    const q = discSpy.mock.calls.at(-1)[0];
+    expect(q.profile).toBe('slope_focus');
+    expect(Object.keys(q).sort()).toEqual(['exclude_known', 'min_center_distance_km', 'profile', 'reference_id', 'slope_weight', 'top_k']);
+  });
+
+  it('the astronaut lands on the best match: #1 is pre-selected, another can be chosen', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(1));
+    const ids = cardIds();
+    await waitFor(() => expect(screen.getByTestId('globe').dataset.selected).toBe(ids[0]));
+    await userEvent.click(document.querySelector(`[data-candidate-id="${ids[1]}"]`));
+    expect(screen.getByTestId('globe').dataset.selected).toBe(ids[1]);
+  });
+
+  it('"New mission" returns to the destination choice with a clean slate', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    await userEvent.click(screen.getByRole('button', { name: /New mission/ }));
+    expect(screen.getByText('Choose your destination')).toBeInTheDocument();
+    expect(cardIds()).toEqual([]);
+    await userEvent.click(screen.getByRole('button', { name: 'Go to Moon' }));
+    expect(await screen.findByText(/What experiment will you run/)).toBeInTheDocument();
+  });
+
+  it('sound is off until the user turns it on', async () => {
+    render(<App />);
+    const btn = screen.getByRole('button', { name: /Sound off/ });
+    expect(btn).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(btn);
+    expect(screen.getByRole('button', { name: /Sound on/ })).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(screen.getByRole('button', { name: /Sound on/ }));
   });
 });
 
