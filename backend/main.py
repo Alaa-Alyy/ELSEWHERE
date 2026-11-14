@@ -6,6 +6,8 @@ Run from the repository root:
 from __future__ import annotations
 
 import logging
+import os
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, Query, Request
@@ -203,6 +205,13 @@ def create_app(settings: Settings | None = None, chat_client=None, climate_fetch
     previews = settings.corpus_dir / "previews"
     if previews.is_dir():
         app.mount("/assets/previews", StaticFiles(directory=previews), name="previews")
+
+    # ---------------------------------------------------------------- built website (single-container deploy)
+    # Mounted last so every /api route above wins; only active when FRONTEND_DIST points at a Vite build.
+    site = os.environ.get("FRONTEND_DIST")
+    if site and Path(site).is_dir():
+        app.mount("/", StaticFiles(directory=site, html=True), name="site")
+        log.info("serving website from %s", site)
 
     return app
 
