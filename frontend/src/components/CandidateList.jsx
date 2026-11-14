@@ -46,7 +46,7 @@ function ScoreRing({ score }) {
         <circle cx="30" cy="30" r={r} className="ring-track" />
         <circle cx="30" cy="30" r={r} className="ring-value" strokeDasharray={`${(v / 100) * c} ${c}`} transform="rotate(-90 30 30)" />
       </svg>
-      <span className="ring-num">{fmt(v, 0)}</span>
+      <span className="ring-num">{fmt(v, 2)}</span>
     </span>
   );
 }
@@ -91,6 +91,22 @@ export default function CandidateList({ ranking, pending, error, parents, select
       {ranking && <ScopeLine scope={ranking.scope} parentsCount={parents.length || 3} mode={ranking.mode} />}
       {ranking?.warnings?.filter((w) => !w.startsWith('DEMO')).map((w) => <p key={w} className="notice small">{w}</p>)}
 
+      {items.length > 0 && (
+        <details className="why-high small" data-testid="why-high">
+          <summary>Why are scores so high?</summary>
+          <p>The index is <b>100 × (1 − D)</b>, where D is a fixed distance between two 10-number terrain fingerprints
+            (8 slope-class shares, relief, local roughness), each part between 0 (identical) and 1. Nothing is rounded or
+            capped in the calculation; the cards just show two decimals.</p>
+          <p>Scores sit in the 90s because we search {ranking?.mode === 'global'
+            ? `${(ranking.scope?.valid_windows || 0).toLocaleString()} Earth windows` : 'every valid window of the curated regions'}:
+            with that many candidates, a few are almost always close on just ten numbers. Smooth, flat sites match most easily,
+            because flat plains are common on Earth, so they can reach 99+.</p>
+          <p>So a high index means "terrain shape is close at 1 km", not "this place is the same". It is not a percentage
+            or a probability. Compare the per-metric bars, the biggest gap and the climate chip, and use the tradeoff view to
+            see why one window ranks above another.</p>
+        </details>
+      )}
+
       {ranking && items.length === 0 && (
         <p className="notice">No valid candidate window could be scored for this reference.</p>
       )}
@@ -131,7 +147,7 @@ export default function CandidateList({ ranking, pending, error, parents, select
                         <span key={k} className="mbar" title={`${METRIC_LABEL[k]}: ${METRIC_HELP[k]}. Distance ${fmt(it.distances[k], 3)} (0 = identical).`}>
                           <span className="mbar-label">{METRIC_LABEL[k]}</span>
                           <span className="bar-track"><span className={`bar ${k}`} style={{ width: `${close * 100}%` }} /></span>
-                          <span className="mbar-val">{fmt(close * 100, 0)}</span>
+                          <span className="mbar-val">{fmt(close * 100, 1)}</span>
                         </span>
                       );
                     })}
@@ -144,7 +160,7 @@ export default function CandidateList({ ranking, pending, error, parents, select
                 </span>
                 <span className="card-id">{it.candidate_id}</span>
                 <span className="card-score">
-                  Terrain similarity index <b>{fmt(it.score, 1)}</b> <span className="muted">/ 100</span>
+                  Terrain similarity index <b>{fmt(it.score, 2)}</b> <span className="muted">/ 100</span>
                 </span>
               </button>
             </li>
