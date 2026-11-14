@@ -1,4 +1,4 @@
-# MissionMatch backend (Person 2) - FastAPI v2.0
+# ELSEWHERE backend (Person 2) - FastAPI v2.0
 
 Serves the shared v2.0 contract over Person 1's `analysis.search` engine. The backend has **no score
 formula of its own**: rankings, distances, evidence and tradeoffs all come from `SearchEngine`.

@@ -236,7 +236,10 @@ export default function App() {
       )}
 
       <header className="topbar">
-        <span className="brand"><span className="brand-mark" aria-hidden="true">◉</span> MissionMatch</span>
+        <span className="brand" title="Exploring other worlds starts with understanding our own.">
+          <span className="brand-mark" aria-hidden="true">◉</span> ELSEWHERE
+          {state.step !== 'intro' && <span className="brand-tagline">Exploring other worlds starts with understanding our own.</span>}
+        </span>
         {state.step !== 'intro' && <ProgressSteps step={state.step} onGo={go} canGo={{
           candidates: true,
           tradeoffs: !!state.selectedCandidateId,

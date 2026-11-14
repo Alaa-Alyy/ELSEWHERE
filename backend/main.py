@@ -46,7 +46,7 @@ def create_app(settings: Settings | None = None, chat_client=None, climate_fetch
     discovery = DiscoveryService(repo)
     climate = ClimateService(fetch=climate_fetch)
 
-    app = FastAPI(title="MissionMatch API", version="2.0.0")
+    app = FastAPI(title="ELSEWHERE API", version="2.0.0")
     app.state.settings, app.state.repo, app.state.search, app.state.chat = settings, repo, search, chat
     app.state.discovery = discovery
     log.info("mode=%s corpus=%s search_ready=%s chat=%s", "DEMO_FIXTURES" if settings.demo_fixtures else "real",

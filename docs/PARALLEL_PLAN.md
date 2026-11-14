@@ -1,4 +1,4 @@
-# MissionMatch - parallel plan (v2.0)
+# ELSEWHERE - parallel plan (v2.0)
 
 > **The v1 whole-site ranking plan is superseded.** v2 searches 243 planned 20 km Earth windows inside
 > 3 parent regions against one 20 km Moon and one 20 km Mars reference. `/api/sites`, `site_id` payloads

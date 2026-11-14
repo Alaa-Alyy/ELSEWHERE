@@ -1,4 +1,6 @@
-# MissionMatch frontend (Person 3)
+# ELSEWHERE frontend (Person 3)
+
+> Exploring other worlds starts with understanding our own.
 
 React + Vite + CesiumJS + three.js. Cinematic, story-led journey:
 

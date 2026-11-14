@@ -49,7 +49,8 @@ export default function Hub({ startAt = 'title', onPick, onSkip }) {
 
       {phase === 'title' && (
         <div className="hub-title" role="dialog" aria-modal="false" aria-labelledby="intro-title">
-          <p className="kicker">NASA Space Apps 2026 · MissionMatch</p>
+          <p className="wordmark" aria-label="ELSEWHERE">ELSEWHERE</p>
+          <p className="kicker">NASA Space Apps 2026</p>
           <h1 id="intro-title" className="intro-sentence">{STORY_SENTENCE}</h1>
           <p className={`intro-question ${showQuestion ? 'visible' : ''}`}>{STORY_QUESTION}</p>
           <div className="intro-actions">
