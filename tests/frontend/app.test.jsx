@@ -36,6 +36,13 @@ vi.mock('../../frontend/src/components/TravelOverlay.jsx', async () => {
   return { default: ({ onDone }) => { useEffect(() => { onDone(); }, []); return null; } };
 });
 
+vi.mock('../../frontend/src/components/TerrainScene.jsx', async () => {
+  const actual = await vi.importActual('../../frontend/src/components/TerrainScene.jsx');
+  return { ...actual, default: ({ left, right }) => (
+    <div data-testid="terrain-scene" data-cells={`${left.size}x${right.size}`} data-bodies={`${left.body},${right.body}`} />
+  ) };
+});
+
 import App from '../../frontend/src/App.jsx';
 import { mockApi } from '../../frontend/src/api/mockClient.js';
 
@@ -324,6 +331,21 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(mars.length).toBeGreaterThan(0);
     expect(pair).toHaveTextContent(/60 km across/);
     expect(screen.queryByText('No candidate preview')).toBeNull();
+  });
+
+  it('3D terrain: one grid per window (reference body + Earth), built only when both arrive', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const duo = await screen.findByTestId('terrain-duo');
+    await waitFor(() => expect(within(duo).getByTestId('terrain-scene')).toBeInTheDocument());
+    const scene = within(duo).getByTestId('terrain-scene');
+    expect(scene.dataset.bodies).toBe('mars,earth');                 // reference body left, Earth right
+    expect(scene.dataset.cells).toBe('20x20');
+    expect(duo).toHaveTextContent(/Same vertical exaggeration ×[\d.]+ for\s+both/);
+    const { sharedExaggeration } = await import('../../frontend/src/components/TerrainScene.jsx');
+    expect(sharedExaggeration({ min_m: 0, max_m: 300 }, { min_m: 0, max_m: 600 })).toBe(5);     // small relief: max ×5
+    expect(sharedExaggeration({ min_m: 0, max_m: 2700 }, { min_m: 0, max_m: 900 })).toBeCloseTo(3.3, 1); // fits the taller
+    expect(duo).toHaveTextContent(/DEMO terrain/);
   });
 
   it('scorecard for the Moon: day length is different, vacuum stated', async () => {

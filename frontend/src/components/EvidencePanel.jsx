@@ -5,6 +5,7 @@ import SourceList from './SourceList.jsx';
 import AnalogScorecard from './AnalogScorecard.jsx';
 import ResearchApplications from './ResearchApplications.jsx';
 import SiteImagery from './SiteImagery.jsx';
+import TerrainDuo from './TerrainDuo.jsx';
 import { closenessBand } from '../analogFacts.js';
 
 // Target (reference) vs selected candidate measured values, side by side on shared scales.
@@ -31,6 +32,7 @@ export default function EvidencePanel({ reference, details, sources, onExplain, 
       </div>
 
       <SiteImagery reference={reference} candidate={c} />
+      <TerrainDuo reference={reference} candidate={c} climate={climate} />
       <AnalogScorecard reference={reference} candidate={c} rankItem={rankItem} mode={mode} climate={climate} />
       <ResearchApplications candidate={c} climate={climate} body={reference?.body} experiment={experiment}
         terrainSimilar={['slope', 'relief', 'variation'].filter((k) => ['very', 'similar'].includes(closenessBand(rankItem?.distances?.[k]).key)).length} />

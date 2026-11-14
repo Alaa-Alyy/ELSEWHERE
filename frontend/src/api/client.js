@@ -82,6 +82,8 @@ export const realApi = {
   getGlobalCandidate: (id, o = {}) => request(`/api/global-candidates/${encodeURIComponent(id)}`, o),
   // Earth climate context (NASA POWER via the backend; POWER sends no CORS headers). Never scored.
   getClimate: ({ lat, lon }, o = {}) => request('/api/climate', { ...o, timeoutMs: 30000, query: { lat, lon } }),
+  // 20 x 20 elevation grid of a window for the 3D terrain view (display only).
+  getTerrainGrid: ({ body, lat, lon }, o = {}) => request('/api/terrain-grid', { ...o, timeoutMs: 60000, query: { body, lat, lon } }),
 };
 
 // Only send discovery fields in global mode; curated requests keep the original v2 body.
@@ -101,7 +103,7 @@ function impl() {
 }
 
 const METHODS = ['getHealth', 'getReferences', 'getParents', 'getSources', 'getCandidate', 'getRankings', 'postDecision',
-  'postChat', 'createPin', 'getDiscover', 'getGlobalCandidate', 'getClimate'];
+  'postChat', 'createPin', 'getDiscover', 'getGlobalCandidate', 'getClimate', 'getTerrainGrid'];
 export const api = Object.fromEntries(
   METHODS.map((m) => [m, (...args) => impl().then((i) => i[m](...args))]),
 );

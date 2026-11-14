@@ -17,6 +17,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .chat_service import ChatService, ChatUnavailable
 from .climate_service import ClimateService, ClimateUnavailable
+from discovery.sources import SourceUnavailable
+from discovery.terrain_grid import TerrainGridError, elevation_grid
 from .config import Settings
 from .data_repository import DataRepository
 from .decision_service import build_decision
@@ -168,6 +170,20 @@ def create_app(settings: Settings | None = None, chat_client=None, climate_fetch
         lon: float = Query(..., ge=-180.0, le=180.0, allow_inf_nan=False),
     ):
         return {"schema_version": SCHEMA_VERSION, "item": climate.get(lat, lon)}
+
+    # 20 x 20 elevation grid (1000 m) of one window, for the 3D terrain view. Display only.
+    @app.get("/api/terrain-grid")
+    def terrain_grid_endpoint(
+        body: str = Query(..., pattern="^(earth|mars|moon)$"),
+        lat: float = Query(..., ge=-90.0, le=90.0, allow_inf_nan=False),
+        lon: float = Query(..., ge=-180.0, le=180.0, allow_inf_nan=False),
+    ):
+        try:
+            return {"schema_version": SCHEMA_VERSION, "item": elevation_grid(body, lat, lon)}
+        except TerrainGridError as exc:
+            return error(422, "invalid_input", str(exc))
+        except SourceUnavailable as exc:
+            return error(503, "terrain_unavailable", str(exc), True)
 
     @app.post("/api/decision")
     def decision(req: DecisionRequest):

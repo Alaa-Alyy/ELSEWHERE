@@ -306,6 +306,18 @@ thead th { color: var(--muted); font-weight: 500; }
   background: linear-gradient(transparent, rgba(0, 0, 0, .75)); z-index: 2; }
 .imagery-na { position: absolute; inset: 0; display: grid; place-items: center; padding: .6rem; text-align: center; font-size: .8rem; color: var(--muted); }
 
+/* ---------- 3D terrain duo ---------- */
+.terrain-duo { display: grid; gap: .45rem; }
+.terrain-duo h3 { margin: 0; font-size: 1rem; }
+.duo-stage { position: relative; aspect-ratio: 2 / 1; border-radius: 14px; overflow: hidden; border: 1px solid var(--line);
+  background: radial-gradient(ellipse at 50% 30%, #1d2a55, #070c1c 75%); }
+.terrain-scene { position: absolute; inset: 0; }
+.terrain-scene canvas { width: 100% !important; height: 100% !important; display: block; cursor: grab; touch-action: none; }
+.terrain-scene.no-webgl::after { content: '3D view needs WebGL'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+.duo-label { position: absolute; bottom: .4rem; font-size: .72rem; padding: .15rem .5rem; border-radius: 999px; background: rgba(5, 10, 24, .75); border: 1px solid var(--line); }
+.duo-label.left { left: .5rem; }
+.duo-label.right { right: .5rem; }
+
 /* ---------- research applications ---------- */
 .research { display: grid; gap: .55rem; padding: .8rem; border-radius: var(--radius); background: rgba(255, 174, 66, .05); border: 1px solid rgba(255, 174, 66, .28); }
 .research h3 { margin: 0; font-size: 1rem; }
