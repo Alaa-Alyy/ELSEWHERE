@@ -313,6 +313,19 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(within(panel).getByText('Scientific validation').closest('.suit-level')).toHaveTextContent('Not assessed');
   });
 
+  it('image pair: real NASA imagery for both windows at the same 60 km scale', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const pair = await screen.findByTestId('site-imagery');
+    const earth = [...pair.querySelectorAll('img')].find((i) => i.src.includes('gibs.earthdata.nasa.gov'));
+    expect(earth.src).toMatch(/Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual/);
+    expect(earth.src).toMatch(/TIME=2000-12-01/);
+    const mars = [...pair.querySelectorAll('img')].filter((i) => i.src.includes('trek.nasa.gov/tiles/Mars/'));
+    expect(mars.length).toBeGreaterThan(0);
+    expect(pair).toHaveTextContent(/60 km across/);
+    expect(screen.queryByText('No candidate preview')).toBeNull();
+  });
+
   it('scorecard for the Moon: day length is different, vacuum stated', async () => {
     render(<App />);
     await startMission('Moon');
