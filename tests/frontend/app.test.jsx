@@ -295,6 +295,24 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(why).toHaveTextContent(/not a percentage or a probability/);
   });
 
+  it('research applications cite measured numbers and keep accessibility/validation "not assessed"', async () => {
+    const { applicationsFor } = await import('../../frontend/src/components/ResearchApplications.jsx');
+    const flat = { slope_histogram: [0.5, 0.3, 0.1, 0.1, 0, 0, 0, 0], relief_p95_p05_m: 120, local_variation_m: 2 };
+    const steep = { slope_histogram: [0.02, 0.05, 0.08, 0.3, 0.35, 0.15, 0.05, 0], relief_p95_p05_m: 2200, local_variation_m: 25 };
+    const keys = (m) => applicationsFor({ metrics: m, body: 'mars' }).map((a) => a.key);
+    expect(keys(flat)).toEqual(expect.arrayContaining(['rover', 'eva', 'landing', 'rs']));
+    expect(keys(flat)).not.toContain('slopes');
+    expect(keys(steep)).toEqual(expect.arrayContaining(['slopes', 'nav', 'rs']));
+    expect(keys(steep)).not.toContain('landing');
+    expect(applicationsFor({ metrics: flat, body: 'mars' }).find((a) => a.key === 'rover').why).toMatch(/90% of the window is under 5°/);
+
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const panel = await screen.findByTestId('research-apps');
+    expect(panel).toHaveTextContent('Operational accessibility');
+    expect(within(panel).getByText('Scientific validation').closest('.suit-level')).toHaveTextContent('Not assessed');
+  });
+
   it('scorecard for the Moon: day length is different, vacuum stated', async () => {
     render(<App />);
     await startMission('Moon');

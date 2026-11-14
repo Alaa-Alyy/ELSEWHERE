@@ -326,7 +326,8 @@ export default function App() {
                 {selectedDetails && (
                   <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
                     onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
-                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]} />
+                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]}
+                    experiment={experiment} />
                 )}
               </>
             )}
@@ -352,7 +353,8 @@ export default function App() {
                 {selectedDetails && (
                   <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
                     onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
-                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]} />
+                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]}
+                    experiment={experiment} />
                 )}
               </>
             )}
