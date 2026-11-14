@@ -252,6 +252,20 @@ export const mockApi = {
     return mockApi.getCandidate(id, o);
   },
 
+  // DEMO elevation grid: smooth synthetic hills, clearly flagged.
+  async getTerrainGrid({ body, lat, lon }, { signal } = {}) {
+    await wait(signal);
+    const n = 20;
+    const seed = Math.abs(Math.sin(lat * 12.9898 + lon * 78.233)) * 10;
+    const rows = Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) =>
+      Math.round(400 * Math.sin((r + seed) / 4) * Math.cos((c - seed) / 5) + 150 * Math.sin((r + c) / 3))));
+    const flat = rows.flat();
+    return { schema_version: SCHEMA_VERSION, item: { body, center: { lat, lon }, cell_m: 1000, size: n, is_demo: true,
+      row_order: 'north to south', col_order: 'west to east', elevation_m: rows,
+      min_m: Math.min(...flat), max_m: Math.max(...flat), valid_fraction: 1,
+      source: { id: 'demo', name: 'DEMO synthetic terrain', note: 'Not real elevation.' } } };
+  },
+
   // DEMO climate: synthetic, clearly flagged; real values come from NASA POWER via the backend.
   async getClimate({ lat, lon }, { signal } = {}) {
     await wait(signal);

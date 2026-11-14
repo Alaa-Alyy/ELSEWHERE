@@ -9,20 +9,8 @@ import { astronautSprite } from '../scene/astronaut.js';
 
 // Spheres used by the analysis data (MOLA 3396.19 km, LOLA 1737.4 km), so clicked latitudes are
 // planetocentric exactly like the pipeline expects. Imagery: NASA Solar System Treks WMTS (no token).
-export const PLANETS = {
-  mars: {
-    radius: 3396190,
-    url: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
-    maxLevel: 7,
-    credit: 'Imagery: NASA Mars Trek, Viking MDIM 2.1 colour mosaic (232 m)',
-  },
-  moon: {
-    radius: 1737400,
-    url: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg',
-    maxLevel: 7,
-    credit: 'Imagery: NASA Moon Trek, LRO WAC global mosaic',
-  },
-};
+import { PLANETS } from '../planetImagery.js';
+export { PLANETS };
 
 const ACCENT = Color.fromCssColorString('#f2a541');
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;

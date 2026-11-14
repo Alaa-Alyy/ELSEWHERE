@@ -3,9 +3,13 @@ import { fmt, SLOPE_BIN_LABELS } from '../format.js';
 import { friendlyMessage } from '../api/errors.js';
 import SourceList from './SourceList.jsx';
 import AnalogScorecard from './AnalogScorecard.jsx';
+import ResearchApplications from './ResearchApplications.jsx';
+import SiteImagery from './SiteImagery.jsx';
+import TerrainDuo from './TerrainDuo.jsx';
+import { closenessBand } from '../analogFacts.js';
 
 // Target (reference) vs selected candidate measured values, side by side on shared scales.
-export default function EvidencePanel({ reference, details, sources, onExplain, chatAvailable, rankItem, mode, climate }) {
+export default function EvidencePanel({ reference, details, sources, onExplain, chatAvailable, rankItem, mode, climate, experiment }) {
   if (details?.error) return <p className="error" role="alert">Candidate details unavailable: {friendlyMessage(details.error)}</p>;
   const c = details?.item;
   if (!c) return <p className="pending">Loading candidate evidence...</p>;
@@ -27,7 +31,11 @@ export default function EvidencePanel({ reference, details, sources, onExplain, 
         </button>
       </div>
 
+      <SiteImagery reference={reference} candidate={c} />
+      <TerrainDuo reference={reference} candidate={c} climate={climate} />
       <AnalogScorecard reference={reference} candidate={c} rankItem={rankItem} mode={mode} climate={climate} />
+      <ResearchApplications candidate={c} climate={climate} body={reference?.body} experiment={experiment}
+        terrainSimilar={['slope', 'relief', 'variation'].filter((k) => ['very', 'similar'].includes(closenessBand(rankItem?.distances?.[k]).key)).length} />
 
       <dl className="kv">
         <dt>Center (WGS84)</dt><dd>{fmt(c.center?.lat, 4)}°, {fmt(c.center?.lon, 4)}°</dd>
@@ -36,16 +44,17 @@ export default function EvidencePanel({ reference, details, sources, onExplain, 
         <dt>Valid data fraction</dt><dd>{fmt(c.analysis?.valid_fraction, 3)}</dd>
       </dl>
 
-      <div className="previews">
+      {/* 2D elevation previews exist only for the curated corpus; global windows use the image pair above */}
+      {(refPreview || preview) && <div className="previews">
         <figure>
           <div className="preview-box">{refPreview ? <img src={refPreview} alt="Reference elevation preview" /> : <span className="muted">No reference preview</span>}</div>
-          <figcaption>Reference</figcaption>
+          <figcaption>Reference elevation</figcaption>
         </figure>
         <figure>
           <div className="preview-box">{preview ? <img src={preview} alt={`Elevation preview of ${c.id}`} /> : <span className="muted">No candidate preview</span>}</div>
-          <figcaption>Candidate</figcaption>
+          <figcaption>Candidate elevation</figcaption>
         </figure>
-      </div>
+      </div>}
 
       {t && m && (
         <>

@@ -64,6 +64,7 @@ variation.
 - Smith, D.E., et al. (2010), LOLA, Space Sci. Rev. 150; LRO LOLA GDR LDEM_64, NASA PDS Geosciences Node
 - Display imagery: NASA EOSDIS GIBS / Worldview, Blue Marble Shaded Relief and Bathymetry
 - NASA POWER Climatology API v2.10.1 (MERRA-2, CERES SYN1deg; 2001-2025), https://power.larc.nasa.gov/ - Earth climate context per window
+- Display imagery (image pair): NASA GIBS Landsat WELD true-colour global annual composite (2000), fallback Blue Marble Next Generation
 - NASA GSFC Planetary Fact Sheets (Mars, Moon, Earth body-wide values), https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 - Display imagery: NASA Solar System Treks (Mars Trek Viking MDIM 2.1 colour mosaic; Moon Trek LRO WAC mosaic)
 - Sounds: CC0 packs by Kenney and a CC0 ambient track by "yd" via OpenGameArt (`frontend/public/audio/CREDITS.md`)

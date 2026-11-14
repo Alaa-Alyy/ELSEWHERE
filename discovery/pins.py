@@ -55,6 +55,11 @@ def measure_pin(body: str, lat: float, lon: float) -> dict:
     acc = P.Accumulator(grid)
     P.accumulate_source(src, crs, acc)
     rg = acc.finalize()
+    try:  # keep the measured grid for the 3D terrain view (display only; never affects metrics)
+        from .terrain_grid import remember
+        remember(body, lat, lon, rg, grid, src, source_id)
+    except Exception:  # noqa: BLE001 - a display cache must never break a measurement
+        pass
     surf = TerrainSurface(rg.elevation, rg.valid)
     b = grid.buffer_cells
     wm = surf.window_metrics(b, b, C.WINDOW_SIZE_CELLS)

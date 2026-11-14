@@ -36,6 +36,13 @@ vi.mock('../../frontend/src/components/TravelOverlay.jsx', async () => {
   return { default: ({ onDone }) => { useEffect(() => { onDone(); }, []); return null; } };
 });
 
+vi.mock('../../frontend/src/components/TerrainScene.jsx', async () => {
+  const actual = await vi.importActual('../../frontend/src/components/TerrainScene.jsx');
+  return { ...actual, default: ({ left, right }) => (
+    <div data-testid="terrain-scene" data-cells={`${left.size}x${right.size}`} data-bodies={`${left.body},${right.body}`} />
+  ) };
+});
+
 import App from '../../frontend/src/App.jsx';
 import { mockApi } from '../../frontend/src/api/mockClient.js';
 
@@ -293,6 +300,52 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     const why = screen.getByTestId('why-high');
     expect(why).toHaveTextContent(/100 × \(1 − D\)/);
     expect(why).toHaveTextContent(/not a percentage or a probability/);
+  });
+
+  it('research applications cite measured numbers and keep accessibility/validation "not assessed"', async () => {
+    const { applicationsFor } = await import('../../frontend/src/components/ResearchApplications.jsx');
+    const flat = { slope_histogram: [0.5, 0.3, 0.1, 0.1, 0, 0, 0, 0], relief_p95_p05_m: 120, local_variation_m: 2 };
+    const steep = { slope_histogram: [0.02, 0.05, 0.08, 0.3, 0.35, 0.15, 0.05, 0], relief_p95_p05_m: 2200, local_variation_m: 25 };
+    const keys = (m) => applicationsFor({ metrics: m, body: 'mars' }).map((a) => a.key);
+    expect(keys(flat)).toEqual(expect.arrayContaining(['rover', 'eva', 'landing', 'rs']));
+    expect(keys(flat)).not.toContain('slopes');
+    expect(keys(steep)).toEqual(expect.arrayContaining(['slopes', 'nav', 'rs']));
+    expect(keys(steep)).not.toContain('landing');
+    expect(applicationsFor({ metrics: flat, body: 'mars' }).find((a) => a.key === 'rover').why).toMatch(/90% of the window is under 5°/);
+
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const panel = await screen.findByTestId('research-apps');
+    expect(panel).toHaveTextContent('Operational accessibility');
+    expect(within(panel).getByText('Scientific validation').closest('.suit-level')).toHaveTextContent('Not assessed');
+  });
+
+  it('image pair: real NASA imagery for both windows at the same 60 km scale', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const pair = await screen.findByTestId('site-imagery');
+    const earth = [...pair.querySelectorAll('img')].find((i) => i.src.includes('gibs.earthdata.nasa.gov'));
+    expect(earth.src).toMatch(/Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual/);
+    expect(earth.src).toMatch(/TIME=2000-12-01/);
+    const mars = [...pair.querySelectorAll('img')].filter((i) => i.src.includes('trek.nasa.gov/tiles/Mars/'));
+    expect(mars.length).toBeGreaterThan(0);
+    expect(pair).toHaveTextContent(/60 km across/);
+    expect(screen.queryByText('No candidate preview')).toBeNull();
+  });
+
+  it('3D terrain: one grid per window (reference body + Earth), built only when both arrive', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    const duo = await screen.findByTestId('terrain-duo');
+    await waitFor(() => expect(within(duo).getByTestId('terrain-scene')).toBeInTheDocument());
+    const scene = within(duo).getByTestId('terrain-scene');
+    expect(scene.dataset.bodies).toBe('mars,earth');                 // reference body left, Earth right
+    expect(scene.dataset.cells).toBe('20x20');
+    expect(duo).toHaveTextContent(/Same vertical exaggeration ×[\d.]+ for\s+both/);
+    const { sharedExaggeration } = await import('../../frontend/src/components/TerrainScene.jsx');
+    expect(sharedExaggeration({ min_m: 0, max_m: 300 }, { min_m: 0, max_m: 600 })).toBe(5);     // small relief: max ×5
+    expect(sharedExaggeration({ min_m: 0, max_m: 2700 }, { min_m: 0, max_m: 900 })).toBeCloseTo(3.3, 1); // fits the taller
+    expect(duo).toHaveTextContent(/DEMO terrain/);
   });
 
   it('scorecard for the Moon: day length is different, vacuum stated', async () => {
