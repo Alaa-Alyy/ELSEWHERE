@@ -10,6 +10,7 @@ React + Vite + CesiumJS + three.js. Cinematic, story-led journey:
 | 2 Mission | 3D Moon/Mars globe (Trek imagery); pin anywhere; "scanning" HUD; the astronaut drops on the pin | `POST /api/pins`, fingerprint shown before any search |
 | Travel | warp back to Earth (skippable, ~3.6 s) while the search runs | `GET /api/discover` or `/api/rankings` |
 | 3 Candidates | the astronaut falls onto #1 on the Cesium Earth globe and hops to any other card you pick; cards show index ring, per-metric closeness, closest metric / biggest gap, known-analog label | API distances and reason codes |
+| Site dossier | click a card (or "Open site dossier"): wide tabbed view over the globe - Overview (real image pair + 3D terrain blocks + summary), Similar / Different, Research, Measurements & sources; Esc or "View on globe" closes | same data as the cards + `/api/climate`, `/api/terrain-grid`, NASA GIBS / Trek imagery |
 | 4 Tradeoffs / 5 Decision | unchanged logic; "Plan another mission" returns to the hub | `/api/decision`, `/api/chat` |
 
 Sound is **off by default** (toggle + volume in the top bar, remembered locally). Reduced-motion users get no

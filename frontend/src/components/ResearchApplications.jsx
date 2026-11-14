@@ -48,6 +48,15 @@ export function applicationsFor({ metrics: m, climate, body }) {
   return out;
 }
 
+// Which applications fit each experiment card (same mapping for the Research tab and the overview).
+export const EXPERIMENT_APPS = { rover: ['rover', 'slopes'], landing: ['landing', 'eva'], habitat: ['landing', 'solar', 'eva'], geology: ['nav', 'rs'] };
+
+/** Best single application to headline: the first one that fits the user's experiment, else the first supported. */
+export function bestApplication(apps, experiment) {
+  const want = EXPERIMENT_APPS[experiment?.key] || [];
+  return apps.find((a) => want.includes(a.key)) || apps[0] || null;
+}
+
 function Level({ label, status, children }) {
   return (
     <div className={`suit-level ${status}`}>
@@ -62,7 +71,7 @@ export default function ResearchApplications({ candidate, climate, body, experim
   const m = candidate?.metrics;
   if (!m) return null;
   const apps = applicationsFor({ metrics: m, climate, body });
-  const wantKeys = { rover: ['rover', 'slopes'], landing: ['landing', 'eva'], habitat: ['landing', 'solar', 'eva'], geology: ['nav', 'rs'] }[experiment?.key] || [];
+  const wantKeys = EXPERIMENT_APPS[experiment?.key] || [];
   const c = climate?.item;
   const dryKey = c?.aridity?.key;
 

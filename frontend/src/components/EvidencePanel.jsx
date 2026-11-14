@@ -2,14 +2,10 @@ import { assetUrl } from '../api/client.js';
 import { fmt, SLOPE_BIN_LABELS } from '../format.js';
 import { friendlyMessage } from '../api/errors.js';
 import SourceList from './SourceList.jsx';
-import AnalogScorecard from './AnalogScorecard.jsx';
-import ResearchApplications from './ResearchApplications.jsx';
-import SiteImagery from './SiteImagery.jsx';
-import TerrainDuo from './TerrainDuo.jsx';
-import { closenessBand } from '../analogFacts.js';
 
 // Target (reference) vs selected candidate measured values, side by side on shared scales.
-export default function EvidencePanel({ reference, details, sources, onExplain, chatAvailable, rankItem, mode, climate, experiment }) {
+// Shown as the "Measurements & sources" tab of the site dossier.
+export default function EvidencePanel({ reference, details, sources, onExplain, chatAvailable }) {
   if (details?.error) return <p className="error" role="alert">Candidate details unavailable: {friendlyMessage(details.error)}</p>;
   const c = details?.item;
   if (!c) return <p className="pending">Loading candidate evidence...</p>;
@@ -31,11 +27,6 @@ export default function EvidencePanel({ reference, details, sources, onExplain, 
         </button>
       </div>
 
-      <SiteImagery reference={reference} candidate={c} />
-      <TerrainDuo reference={reference} candidate={c} climate={climate} />
-      <AnalogScorecard reference={reference} candidate={c} rankItem={rankItem} mode={mode} climate={climate} />
-      <ResearchApplications candidate={c} climate={climate} body={reference?.body} experiment={experiment}
-        terrainSimilar={['slope', 'relief', 'variation'].filter((k) => ['very', 'similar'].includes(closenessBand(rankItem?.distances?.[k]).key)).length} />
 
       <dl className="kv">
         <dt>Center (WGS84)</dt><dd>{fmt(c.center?.lat, 4)}°, {fmt(c.center?.lon, 4)}°</dd>

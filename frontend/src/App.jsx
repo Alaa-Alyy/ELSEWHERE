@@ -13,7 +13,7 @@ import PlanetGlobe from './components/PlanetGlobe.jsx';
 import { PLACES } from './places.js';
 import { SEARCH_MODES } from './state.js';
 import CandidateList from './components/CandidateList.jsx';
-import EvidencePanel from './components/EvidencePanel.jsx';
+import SiteDossier from './components/SiteDossier.jsx';
 import TradeoffPanel from './components/TradeoffPanel.jsx';
 import DecisionBrief from './components/DecisionBrief.jsx';
 import ChatPanel from './components/ChatPanel.jsx';
@@ -183,6 +183,14 @@ export default function App() {
     if (!state.selectedCandidateId) select(items[0].candidate_id);
   }, [state.step, state.ranking, state.rankingPending, state.selectedCandidateId, select]);
 
+  // Site dossier (wide tabbed view over the globe). Opened by the user, never automatically,
+  // so the astronaut landing on #1 stays visible first.
+  const [dossierOpen, setDossierOpen] = useState(false);
+  const openDossier = useCallback((id) => { if (id) select(id); setDossierOpen(true); }, [select]);
+  const closeDossier = useCallback(() => setDossierOpen(false), []);
+  const selectAndOpen = useCallback((id) => { select(id); setDossierOpen(true); }, [select]);
+  useEffect(() => { if (!['candidates', 'tradeoffs'].includes(state.step)) setDossierOpen(false); }, [state.step]);
+
   const startSearch = () => {
     autoSelectRef.current = true;
     setTravel(true);
@@ -277,6 +285,22 @@ export default function App() {
               landOn={travel ? null : state.selectedCandidateId}
               onLanded={() => sound.play('land')}
             />
+            {dossierOpen && selectedItem && ['candidates', 'tradeoffs'].includes(state.step) && (
+              <SiteDossier
+                reference={reference}
+                details={selectedDetails}
+                rankItem={selectedItem}
+                rank={(state.ranking?.items || []).findIndex((i) => i.candidate_id === state.selectedCandidateId) + 1}
+                ranking={state.ranking}
+                parents={parents}
+                climate={climateById[state.selectedCandidateId]}
+                experiment={experiment}
+                sources={sources}
+                onExplain={() => setChatOpen(true)}
+                chatAvailable={chatAvailable}
+                onClose={closeDossier}
+              />
+            )}
           </section>
         )}
 
@@ -319,16 +343,11 @@ export default function App() {
                   parents={parents}
                   selectedId={state.selectedCandidateId}
                   notice={state.selectionNotice}
-                  onSelect={select}
+                  onSelect={selectAndOpen}
+                  onOpenDossier={openDossier}
                   onBack={() => go('mission')}
                   onNext={() => go('tradeoffs')}
                 />
-                {selectedDetails && (
-                  <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
-                    onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
-                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]}
-                    experiment={experiment} />
-                )}
               </>
             )}
 
@@ -350,11 +369,10 @@ export default function App() {
                   onBack={() => go('candidates')}
                   onNext={() => go('decision')}
                 />
-                {selectedDetails && (
-                  <EvidencePanel reference={reference} details={selectedDetails} sources={sources}
-                    onExplain={() => setChatOpen(true)} chatAvailable={chatAvailable}
-                    rankItem={selectedItem} mode={state.ranking?.mode} climate={climateById[state.selectedCandidateId]}
-                    experiment={experiment} />
+                {state.selectedCandidateId && (
+                  <button className="btn small primary open-dossier" onClick={() => openDossier(state.selectedCandidateId)} data-sound="open">
+                    📂 Open the selected site's dossier
+                  </button>
                 )}
               </>
             )}

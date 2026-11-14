@@ -55,6 +55,14 @@ async function startMission(body = 'Mars', experiment = 'Field geology training'
   await userEvent.click(await screen.findByRole('button', { name: new RegExp(experiment) }));
 }
 
+// Results details live in the site dossier (tabs) over the globe.
+async function openDossier(tab = 'Overview') {
+  await userEvent.click(await screen.findByRole('button', { name: /Open site dossier/ }));
+  const dossier = await screen.findByTestId('site-dossier');
+  await userEvent.click(within(dossier).getByRole('tab', { name: tab }));
+  return dossier;
+}
+
 describe('story entry', () => {
   it('shows the exact opening sentence, question and CTA on entry', () => {
     render(<App />);
@@ -233,6 +241,7 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     const discSpy = vi.spyOn(mockApi, 'getDiscover');
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await openDossier('Similar / Different');
     const card = await screen.findByTestId('analog-scorecard');
     const item = (await discSpy.mock.results.at(-1).value).items[0];
     // terrain distances shown are exactly the server's
@@ -252,6 +261,7 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
     await waitFor(() => expect(climSpy).toHaveBeenCalledTimes(cardIds().length));
     expect(await screen.findAllByText(/mm\/yr/)).not.toHaveLength(0);
+    await openDossier('Similar / Different');
     const card = await screen.findByTestId('analog-scorecard');
     await waitFor(() => expect(within(card).getByText('Dryness')).toBeInTheDocument());
     expect(card).toHaveTextContent(/DEMO values/);                 // fixture climate is labelled
@@ -283,6 +293,7 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
     await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    await openDossier('Similar / Different');
     const card = await screen.findByTestId('analog-scorecard');
     await waitFor(() => expect(card).toHaveTextContent(/Climate unavailable/));
     expect(card).toHaveTextContent(/Very similar|Similar|Partly similar|Different/);
@@ -312,9 +323,15 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     expect(keys(steep)).toEqual(expect.arrayContaining(['slopes', 'nav', 'rs']));
     expect(keys(steep)).not.toContain('landing');
     expect(applicationsFor({ metrics: flat, body: 'mars' }).find((a) => a.key === 'rover').why).toMatch(/90% of the window is under 5°/);
+    const { bestApplication } = await import('../../frontend/src/components/ResearchApplications.jsx');
+    const appsFlat = applicationsFor({ metrics: flat, body: 'mars' });
+    expect(bestApplication(appsFlat, { key: 'geology' }).key).toBe('rs');       // matches the experiment, not just #1
+    expect(bestApplication(appsFlat, { key: 'rover' }).key).toBe('rover');
+    expect(bestApplication(appsFlat, null).key).toBe(appsFlat[0].key);
 
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await openDossier('Research');
     const panel = await screen.findByTestId('research-apps');
     expect(panel).toHaveTextContent('Operational accessibility');
     expect(within(panel).getByText('Scientific validation').closest('.suit-level')).toHaveTextContent('Not assessed');
@@ -323,6 +340,7 @@ describe('cinematic journey (presentation only, same API calls)', () => {
   it('image pair: real NASA imagery for both windows at the same 60 km scale', async () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await openDossier('Overview');
     const pair = await screen.findByTestId('site-imagery');
     const earth = [...pair.querySelectorAll('img')].find((i) => i.src.includes('gibs.earthdata.nasa.gov'));
     expect(earth.src).toMatch(/Landsat_WELD_CorrectedReflectance_TrueColor_Global_Annual/);
@@ -336,6 +354,7 @@ describe('cinematic journey (presentation only, same API calls)', () => {
   it('3D terrain: one grid per window (reference body + Earth), built only when both arrive', async () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await openDossier('Overview');
     const duo = await screen.findByTestId('terrain-duo');
     await waitFor(() => expect(within(duo).getByTestId('terrain-scene')).toBeInTheDocument());
     const scene = within(duo).getByTestId('terrain-scene');
@@ -354,9 +373,37 @@ describe('cinematic journey (presentation only, same API calls)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Tycho crater' }));
     await screen.findByTestId('fingerprint');
     await userEvent.click(screen.getByRole('button', { name: 'Search all Earth land' }));
+    await openDossier('Similar / Different');
     const card = await screen.findByTestId('analog-scorecard');
     expect(within(card).getByText('Day length').closest('tr')).toHaveTextContent('Different');
     expect(card).toHaveTextContent(/Near vacuum/);
+  });
+
+  it('site dossier: opens from a card, four tabs, keyboard + close, side panel stays light', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(1));
+    expect(screen.queryByTestId('site-dossier')).toBeNull();            // not opened automatically
+    expect(screen.queryByTestId('analog-scorecard')).toBeNull();        // details no longer stacked in the panel
+    const ids = cardIds();
+    await userEvent.click(document.querySelector(`[data-candidate-id="${ids[1]}"]`));   // clicking a card opens it
+    const d = await screen.findByTestId('site-dossier');
+    expect(d).toHaveTextContent('result #2');
+    const tabs = within(d).getAllByRole('tab').map((t) => t.textContent);
+    expect(tabs).toEqual(['Overview', 'Similar / Different', 'Research', 'Measurements & sources']);
+    expect(within(d).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+    within(d).getByRole('tab', { name: 'Overview' }).focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(within(d).getByRole('tab', { name: 'Similar / Different' })).toHaveAttribute('aria-selected', 'true');
+    expect(await within(d).findByTestId('analog-scorecard')).toBeInTheDocument();
+    await userEvent.click(within(d).getByRole('tab', { name: 'Measurements & sources' }));
+    expect(within(d).getByText(/Measured values \(reference vs candidate\)/)).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByTestId('site-dossier')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: /Open site dossier/ }));
+    await userEvent.click(within(await screen.findByTestId('site-dossier')).getByRole('button', { name: /View on globe/ }));
+    expect(screen.queryByTestId('site-dossier')).toBeNull();
+    expect(screen.getByTestId('globe').dataset.selected).toBe(ids[1]);   // selection kept
   });
 
   it('sound is off until the user turns it on', async () => {
