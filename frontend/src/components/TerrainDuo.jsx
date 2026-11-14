@@ -61,7 +61,7 @@ export default function TerrainDuo({ reference, candidate, climate }) {
             Each block is a real 20 × 20 km window: {a.item.size} × {a.item.size} cells of {a.item.cell_m} m from the same
             grid we measured ({a.item.source?.id} / {b.item.source?.id}). Same vertical exaggeration ×{sharedExaggeration(a.item, b.item)} for
             both; north is at the back. Colours and the astronaut are cartoon illustration, not to scale.
-            {demo && <b> DEMO terrain (not real elevation).</b>} Drag to look around.
+            {demo && <b> DEMO terrain (not real elevation).</b>} Drag sideways to turn the blocks.
           </p>
         </>
       )}

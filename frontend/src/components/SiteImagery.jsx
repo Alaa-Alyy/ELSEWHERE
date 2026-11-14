@@ -99,7 +99,8 @@ export default function SiteImagery({ reference, candidate }) {
         <figure>
           <div className="imagery-frame">
             <PlanetView body={body} center={rc} />
-            <span className="imagery-box" aria-hidden="true" />
+            {/* no imagery near the pole -> no box over the notice text */}
+            {Math.abs(rc.lat) <= POLAR_LIMIT_DEG && <span className="imagery-box" aria-hidden="true" />}
           </div>
           <figcaption><b>{body === 'mars' ? 'Mars' : 'Moon'}</b> · {rc.lat.toFixed(2)}°, {rc.lon.toFixed(2)}°</figcaption>
         </figure>
