@@ -154,6 +154,10 @@ thead th { color: var(--muted); font-weight: 500; }
 .histo { display: grid; gap: .2rem; }
 .histo-row { display: grid; grid-template-columns: 3.6rem 1fr 3.2rem 1fr 3.2rem; gap: .35rem; align-items: center; font-size: .75rem; }
 .histo-label, .histo-val { color: var(--muted); }
+.histo-row.two { grid-template-columns: 3.6rem 1fr 3.2rem; }
+.fingerprint { background: var(--navy-900); border-radius: 8px; padding: .5rem .6rem; display: grid; gap: .35rem; }
+.row-choices { grid-template-columns: 1fr 1fr; }
+.row-choices .choice input { grid-row: auto; }
 
 .explain { background: var(--navy-700); border-radius: var(--radius); padding: .5rem .75rem; font-size: .9rem; }
 .explain ul { margin: 0 0 .4rem; padding-left: 1.1rem; }

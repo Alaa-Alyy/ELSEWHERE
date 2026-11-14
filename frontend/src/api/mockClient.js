@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // DEMO MOCK SERVER - stands in for Person 2's backend until it is reachable.
 // Loaded ONLY when VITE_USE_FIXTURES=true (see client.js); excluded from real builds.
 //
@@ -71,11 +71,32 @@ function reasonCodes(d, weights) {
   return [`closest_on_${sorted[0][0]}`, `largest_gap_on_${sorted[sorted.length - 1][0]}`];
 }
 
-function rank(referenceId, profile, slopeWeight, topK) {
-  const ref = REF[referenceId];
+// Demo pins: synthetic, deterministic per rounded coordinate (is_demo=true).
+const PINS = {};
+function demoPin(body, lat, lon) {
+  if (!['mars', 'moon'].includes(body)) throw invalid('body must be mars or moon');
+  if (Math.abs(lat) > (body === 'mars' ? 85 : 87)) throw invalid('latitude too close to the pole');
+  const la = Math.round(lat * 100) / 100;
+  const lo = Math.round(((((lon + 180) % 360) + 360) % 360 - 180) * 100) / 100;
+  const f = (v, p, n) => `${Math.abs(v).toFixed(2)}${v >= 0 ? p : n}`.replace('.', 'p');
+  const id = `pin-${body}-${f(la, 'n', 's')}-${f(lo, 'e', 'w')}`;
+  const base = REF[body === 'mars' ? 'mars-jezero' : 'moon-south-pole-sector'];
+  const s = Math.abs(Math.sin(la * 12.9898 + lo * 78.233));
+  const hist = base.metrics.slope_histogram.map((p, i) => p * (0.6 + 0.8 * ((s * (i + 3)) % 1)));
+  const tot = hist.reduce((a, b) => a + b, 0);
+  PINS[id] = {
+    ...clone(base), id, name: `[DEMO] Pinned ${body} window ${la}, ${lo}`, center: { lat: la, lon: lo },
+    metrics: { slope_histogram: hist.map((p) => p / tot), relief_p95_p05_m: base.metrics.relief_p95_p05_m * (0.4 + 1.2 * s),
+      local_variation_m: base.metrics.local_variation_m * (0.5 + s) },
+  };
+  return PINS[id];
+}
+
+function rank(referenceId, profile, slopeWeight, topK, maxK = 3) {
+  const ref = REF[referenceId] || PINS[referenceId];
   if (!ref) throw notFound(`Unknown reference "${referenceId}"`);
   const k = Number(topK ?? 3);
-  if (!Number.isInteger(k) || k < 1 || k > 3) throw invalid('top_k must be an integer in 1..3');
+  if (!Number.isInteger(k) || k < 1 || k > maxK) throw invalid(`top_k must be an integer in 1..${maxK}`);
   const w = effectiveWeight(profile, slopeWeight);
   const weights = { slope: w, relief: (1 - w) / 2, variation: (1 - w) / 2 };
 
@@ -213,6 +234,24 @@ export const mockApi = {
     return publicRanking(rank(reference_id, profile, slope_weight, top_k));
   },
 
+  async createPin({ body, lat, lon }, { signal } = {}) {
+    await wait(signal);
+    return { schema_version: SCHEMA_VERSION, item: clone(demoPin(body, Number(lat), Number(lon))) };
+  },
+
+  async getDiscover({ reference_id, profile, slope_weight = null, top_k = 5 }, { signal } = {}) {
+    await wait(signal);
+    const r = publicRanking(rank(reference_id, profile, slope_weight, top_k, 10));
+    r.mode = 'global';
+    r.scope.coverage = 'DEMO: 3 fixture regions stand in for Earth land';
+    r.items.forEach((it) => { it.known_analog = null; it.center = CAND[it.candidate_id].center; });
+    return r;
+  },
+
+  async getGlobalCandidate(id, o = {}) {
+    return mockApi.getCandidate(id, o);
+  },
+
   async postDecision(body, { signal } = {}) {
     await wait(signal);
     const { reference_id, profile, slope_weight = null, selected_candidate_id, alternative_candidate_id = null } = body;
@@ -220,13 +259,13 @@ export const mockApi = {
     if (!CAND[selected_candidate_id]) throw notFound(`Unknown candidate "${selected_candidate_id}"`);
     if (alternative_candidate_id && !CAND[alternative_candidate_id]) throw notFound(`Unknown candidate "${alternative_candidate_id}"`);
     if (alternative_candidate_id === selected_candidate_id) throw invalid('alternative must differ from the selection');
-    const r = rank(reference_id, profile, slope_weight, 3);
+    const r = rank(reference_id, profile, slope_weight, body.mode === 'global' ? (body.top_k || 5) : 3, 10);
     const sel = locateItem(r, selected_candidate_id);
     if (!sel) throw invalid('selected candidate is not among the current distinct results');
     const alt = alternative_candidate_id ? locateItem(r, alternative_candidate_id) : null;
     if (alternative_candidate_id && !alt) throw invalid('alternative candidate is not among the current distinct results');
 
-    const ref = REF[reference_id];
+    const ref = REF[reference_id] || PINS[reference_id];
     const selRec = CAND[selected_candidate_id];
     const metricValue = (rec, k) => rec.metrics[METRIC_INFO[k].metric];
     const evidence = Object.keys(METRIC_INFO).map((k) => ({
@@ -275,7 +314,7 @@ export const mockApi = {
     const { message, reference_id, profile, slope_weight = null, selected_candidate_id = null, alternative_candidate_id = null } = body;
     if (typeof message !== 'string' || !message.trim()) throw invalid('message is required');
     if (message.length > 2000) throw invalid('message must be at most 2000 characters');
-    const r = rank(reference_id, profile, slope_weight, 3);
+    const r = rank(reference_id, profile, slope_weight, body.mode === 'global' ? (body.top_k || 5) : 3, 10);
     const sel = selected_candidate_id ? locateItem(r, selected_candidate_id) : null;
     const alt = alternative_candidate_id ? locateItem(r, alternative_candidate_id) : null;
     const f = (x) => x.toFixed(3);
@@ -287,11 +326,11 @@ export const mockApi = {
       if (alt) {
         answer += ` The alternative ${alt.candidate_id} has slope ${f(r.weights.slope * alt.distances.slope)}, relief ${f(r.weights.relief * alt.distances.relief)}, variation ${f(r.weights.variation * alt.distances.variation)}.`;
       }
-      if (/soil|temperature|thermal|ice|gravity|radiation|حرار|تربة/i.test(message)) {
+      if (/soil|temperature|thermal|ice|gravity|radiation|Ø­Ø±Ø§Ø±|ØªØ±Ø¨Ø©/i.test(message)) {
         answer += ' Terrain elevation data cannot tell us about soil, temperature, ice, gravity or radiation, so I cannot answer that from this evidence.';
       }
     }
-    const ref = REF[reference_id];
+    const ref = REF[reference_id] || PINS[reference_id];
     return {
       answer,
       candidate_ids: [sel?.candidate_id, alt?.candidate_id].filter(Boolean),

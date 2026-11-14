@@ -5,6 +5,9 @@ import { contextKey, initialState, reducer } from './state.js';
 import Intro from './components/Intro.jsx';
 import MissionControls from './components/MissionControls.jsx';
 import EarthGlobe from './components/EarthGlobe.jsx';
+import PlanetGlobe from './components/PlanetGlobe.jsx';
+import { PLACES } from './places.js';
+import { SEARCH_MODES } from './state.js';
 import CandidateList from './components/CandidateList.jsx';
 import EvidencePanel from './components/EvidencePanel.jsx';
 import TradeoffPanel from './components/TradeoffPanel.jsx';
@@ -50,20 +53,36 @@ export default function App() {
 
   const searching = ['candidates', 'tradeoffs', 'decision'].includes(state.step);
 
-  // ---- rankings: re-query on reference/profile/weight change; ignore stale responses
+  const isGlobal = state.mode === 'global';
+  const discoveryOpts = (s) => (s.mode === 'global'
+    ? { mode: 'global', top_k: SEARCH_MODES.global.topK, min_center_distance_km: 100, exclude_known: s.excludeKnown }
+    : {});
+
+  // ---- rankings: re-query on reference/profile/weight/mode change; ignore stale responses
   useEffect(() => {
     if (!searching) return undefined;
     const ctrl = new AbortController();
     const seq = nextSeq();
     dispatch({ type: 'RANKING_REQUEST', seq });
-    api.getRankings(
-      { reference_id: state.referenceId, profile: state.profile, slope_weight: state.slopeWeight, top_k: 3 },
-      { signal: ctrl.signal },
-    )
+    const q = { reference_id: state.referenceId, profile: state.profile, slope_weight: state.slopeWeight };
+    const call = state.mode === 'global'
+      ? api.getDiscover({ ...q, top_k: SEARCH_MODES.global.topK, min_center_distance_km: 100, exclude_known: state.excludeKnown }, { signal: ctrl.signal })
+      : api.getRankings({ ...q, top_k: 3 }, { signal: ctrl.signal });
+    call
       .then((ranking) => dispatch({ type: 'RANKING_SUCCESS', seq, ranking }))
       .catch((error) => { if (!isAbort(error)) dispatch({ type: 'RANKING_FAILURE', seq, error }); });
     return () => ctrl.abort();
-  }, [searching, state.referenceId, state.profile, state.slopeWeight]);
+  }, [searching, state.referenceId, state.profile, state.slopeWeight, state.mode, state.excludeKnown]);
+
+  // ---- pin a Moon/Mars location: measured server-side before any Earth search
+  const placePin = useCallback((lat, lon) => {
+    const s = stateRef.current;
+    const seq = nextSeq();
+    dispatch({ type: 'PIN_REQUEST', seq });
+    api.createPin({ body: s.body, lat, lon })
+      .then((r) => dispatch({ type: 'PIN_SUCCESS', seq, pin: r.item }))
+      .catch((error) => dispatch({ type: 'PIN_FAILURE', seq, error }));
+  }, []);
 
   // ---- candidate details (geometry, metrics, sources) for displayed results
   const itemIds = useMemo(() => (state.ranking?.items || []).map((i) => i.candidate_id), [state.ranking]);
@@ -71,15 +90,18 @@ export default function App() {
     const missing = itemIds.filter((id) => !stateRef.current.candidateDetailsById[id]);
     if (!missing.length) return undefined;
     const ctrl = new AbortController();
+    const fetchOne = stateRef.current.mode === 'global' ? api.getGlobalCandidate : api.getCandidate;
     missing.forEach((id) => {
-      api.getCandidate(id, { signal: ctrl.signal })
+      fetchOne(id, { signal: ctrl.signal })
         .then((details) => dispatch({ type: 'CANDIDATE_DETAILS', id, details }))
         .catch((error) => { if (!isAbort(error)) dispatch({ type: 'CANDIDATE_DETAILS', id, details: { error } }); });
     });
     return () => ctrl.abort();
   }, [itemIds]);
 
-  const reference = references.find((r) => r.id === state.referenceId) || null;
+  const reference = state.pin && state.pin.id === state.referenceId
+    ? state.pin
+    : references.find((r) => r.id === state.referenceId) || null;
 
   const confirmDecision = useCallback(() => {
     const s = stateRef.current;
@@ -93,6 +115,7 @@ export default function App() {
       slope_weight: s.slopeWeight,
       selected_candidate_id: s.selectedCandidateId,
       alternative_candidate_id: s.alternativeCandidateId,
+      ...discoveryOpts(s),
     })
       .then((decision) => dispatch({ type: 'DECISION_SUCCESS', seq, key, decision }))
       .catch((error) => dispatch({ type: 'DECISION_FAILURE', seq, error }));
@@ -112,6 +135,7 @@ export default function App() {
       selected_candidate_id: s.selectedCandidateId,
       alternative_candidate_id: s.alternativeCandidateId,
       history,
+      ...discoveryOpts(s),
     })
       .then((reply) => dispatch({ type: 'CHAT_SUCCESS', seq, key, reply }))
       .catch((error) => dispatch({ type: 'CHAT_FAILURE', seq, error }));
@@ -141,16 +165,29 @@ export default function App() {
       </header>
 
       <main className={`layout ${state.step === 'intro' ? 'no-panel' : ''}`}>
-        <section className="globe-area" aria-label="Earth globe">
-          <EarthGlobe
-            parents={parents}
-            items={searching ? state.ranking?.items || [] : []}
-            detailsById={state.candidateDetailsById}
-            selectedId={state.selectedCandidateId}
-            alternativeId={state.alternativeCandidateId}
-            onSelect={select}
-          />
-        </section>
+        {state.step === 'mission' ? (
+          <section className="globe-area" aria-label={`${state.body} globe`}>
+            <PlanetGlobe
+              key={state.body}
+              body={state.body}
+              pin={state.pin || (reference?.body === state.body ? reference : null)}
+              markers={PLACES[state.body]}
+              onPick={placePin}
+              disabled={state.pinPending}
+            />
+          </section>
+        ) : (
+          <section className="globe-area" aria-label="Earth globe">
+            <EarthGlobe
+              parents={isGlobal ? [] : parents}
+              items={searching ? state.ranking?.items || [] : []}
+              detailsById={state.candidateDetailsById}
+              selectedId={state.selectedCandidateId}
+              alternativeId={state.alternativeCandidateId}
+              onSelect={select}
+            />
+          </section>
+        )}
 
         {state.step !== 'intro' && (
           <aside className="side-panel" aria-live="polite">
@@ -160,10 +197,19 @@ export default function App() {
               <MissionControls
                 body={state.body}
                 profile={state.profile}
+                mode={state.mode}
+                excludeKnown={state.excludeKnown}
                 reference={reference}
+                pin={state.pin}
+                pinPending={state.pinPending}
+                pinError={state.pinError}
                 sources={sources}
                 onBody={(body) => dispatch({ type: 'SET_BODY', body })}
                 onProfile={(profile) => dispatch({ type: 'SET_PROFILE', profile })}
+                onMode={(mode) => dispatch({ type: 'SET_MODE', mode })}
+                onExcludeKnown={(value) => dispatch({ type: 'SET_EXCLUDE_KNOWN', value })}
+                onPlace={placePin}
+                onUseCurated={() => dispatch({ type: 'USE_CURATED_REFERENCE' })}
                 onSearch={() => go('candidates')}
               />
             )}

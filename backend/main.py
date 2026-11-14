@@ -19,11 +19,13 @@ from .chat_service import ChatService, ChatUnavailable
 from .config import Settings
 from .data_repository import DataRepository
 from .decision_service import build_decision
-from .schemas import ChatRequest, DecisionRequest
+from .discovery_service import DiscoveryService, DiscoveryUnavailable
+from .schemas import ChatRequest, DecisionRequest, PinRequest
 from .search_adapter import SearchAdapter, SearchError, UnknownIdError
 
 SCHEMA_VERSION = "2.0"
 RANKING_PARAMS = {"reference_id", "profile", "slope_weight", "top_k"}
+DISCOVER_PARAMS = RANKING_PARAMS | {"min_center_distance_km", "exclude_known"}
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("missionmatch.api")
@@ -38,9 +40,11 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
     repo = DataRepository(settings)
     search = SearchAdapter(settings)
     chat = ChatService(settings, client=chat_client)
+    discovery = DiscoveryService(repo)
 
     app = FastAPI(title="MissionMatch API", version="2.0.0")
     app.state.settings, app.state.repo, app.state.search, app.state.chat = settings, repo, search, chat
+    app.state.discovery = discovery
     log.info("mode=%s corpus=%s search_ready=%s chat=%s", "DEMO_FIXTURES" if settings.demo_fixtures else "real",
              settings.corpus_dir, search.ready, chat.available)
 
@@ -53,6 +57,10 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
     @app.exception_handler(SearchError)
     async def _search_error(_: Request, exc: SearchError):
         return error(exc.http_status, exc.code, str(exc), exc.retryable)
+
+    @app.exception_handler(DiscoveryUnavailable)
+    async def _discovery_error(_: Request, exc: DiscoveryUnavailable):
+        return error(503, "discovery_unavailable", str(exc), True)
 
     @app.exception_handler(ChatUnavailable)
     async def _chat_error(_: Request, exc: ChatUnavailable):
@@ -82,7 +90,10 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
         return {"status": "ok", "schema_version": SCHEMA_VERSION, "data_ready": data_ready,
                 "chat_available": chat.available, "demo_mode": settings.demo_fixtures,
                 "chat_model": f"{settings.llm_provider}:{settings.openai_model}" if chat.available else None,
-                "corpus_version": search.corpus_version, "problems": repo.problems[:5]}
+                "corpus_version": search.corpus_version, "problems": repo.problems[:5],
+                "discovery_ready": discovery.ready,
+                "global_windows": discovery.index.n if discovery.ready else 0,
+                "global_corpus_version": discovery.index.corpus_version if discovery.ready else None}
 
     @app.get("/api/references")
     def references():
@@ -118,15 +129,44 @@ def create_app(settings: Settings | None = None, chat_client=None) -> FastAPI:
             raise UnknownIdError(f"unknown reference_id {reference_id!r}")
         return search.search(reference_id, profile, slope_weight, top_k)
 
+    # ---------------------------------------------------------------- discovery mode (additive)
+    @app.post("/api/pins")
+    def pins(req: PinRequest):
+        """Measure a Moon/Mars pin with the shared pipeline; returns a reference RegionRecord."""
+        return {"schema_version": SCHEMA_VERSION, "item": discovery.pin(req.body, req.lat, req.lon)}
+
+    @app.get("/api/discover")
+    def discover(
+        request: Request,
+        reference_id: str = Query(..., max_length=80),
+        profile: str = Query(...),
+        slope_weight: Optional[float] = Query(None, ge=0.0, le=1.0, allow_inf_nan=False),
+        top_k: int = Query(5, ge=1, le=10),
+        min_center_distance_km: float = Query(100.0, ge=20.0, le=2000.0, allow_inf_nan=False),
+        exclude_known: bool = Query(False),
+    ):
+        extra = set(request.query_params) - DISCOVER_PARAMS
+        if extra:
+            return error(422, "invalid_input", f"unsupported parameter(s): {', '.join(sorted(extra))}")
+        return discovery.discover(reference_id, profile, slope_weight, top_k, min_center_distance_km, exclude_known)
+
+    @app.get("/api/global-candidates/{candidate_id}")
+    def global_candidate(candidate_id: str):
+        return discovery.candidate(candidate_id)
+
     # ---------------------------------------------------------------- decision + chat
     @app.post("/api/decision")
     def decision(req: DecisionRequest):
+        if req.mode == "global":
+            return discovery.decision(req)
         return build_decision(repo, search, req)
 
     @app.post("/api/chat")
     def chat_endpoint(req: ChatRequest, request: Request):
         if not chat.check_rate(request.client.host if request.client else "unknown"):
             return error(429, "rate_limited", "Too many chat requests; please wait a minute.", True)
+        if req.mode == "global":
+            return chat.answer(repo, search, req, context_builder=discovery.chat_context)
         return chat.answer(repo, search, req)
 
     # ---------------------------------------------------------------- previews (approved folder only)

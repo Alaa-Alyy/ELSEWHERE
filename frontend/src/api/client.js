@@ -65,16 +65,28 @@ export const realApi = {
   getCandidate: (id, o = {}) => request(`/api/candidates/${encodeURIComponent(id)}`, o),
   getRankings: ({ reference_id, profile, slope_weight = null, top_k = 3 }, o = {}) =>
     request('/api/rankings', { ...o, query: { reference_id, profile, slope_weight, top_k } }),
-  postDecision: ({ reference_id, profile, slope_weight = null, selected_candidate_id, alternative_candidate_id = null }, o = {}) =>
-    request('/api/decision', { ...o, method: 'POST', body: { reference_id, profile, slope_weight, selected_candidate_id, alternative_candidate_id } }),
-  postChat: ({ message, reference_id, profile, slope_weight = null, selected_candidate_id = null, alternative_candidate_id = null, history = [] }, o = {}) =>
+  postDecision: ({ reference_id, profile, slope_weight = null, selected_candidate_id, alternative_candidate_id = null, ...disc }, o = {}) =>
+    request('/api/decision', { ...o, method: 'POST', body: { reference_id, profile, slope_weight, selected_candidate_id, alternative_candidate_id, ...discoveryFields(disc) } }),
+  postChat: ({ message, reference_id, profile, slope_weight = null, selected_candidate_id = null, alternative_candidate_id = null, history = [], ...disc }, o = {}) =>
     request('/api/chat', {
       ...o,
       method: 'POST',
       timeoutMs: 30000,
-      body: { message, reference_id, profile, slope_weight, selected_candidate_id, alternative_candidate_id, history },
+      body: { message, reference_id, profile, slope_weight, selected_candidate_id, alternative_candidate_id, history, ...discoveryFields(disc) },
     }),
+  // ---- discovery mode (additive endpoints)
+  createPin: ({ body, lat, lon }, o = {}) =>
+    request('/api/pins', { ...o, method: 'POST', timeoutMs: 60000, body: { body, lat, lon } }),
+  getDiscover: ({ reference_id, profile, slope_weight = null, top_k = 5, min_center_distance_km = 100, exclude_known = false }, o = {}) =>
+    request('/api/discover', { ...o, timeoutMs: 60000, query: { reference_id, profile, slope_weight, top_k, min_center_distance_km, exclude_known } }),
+  getGlobalCandidate: (id, o = {}) => request(`/api/global-candidates/${encodeURIComponent(id)}`, o),
 };
+
+// Only send discovery fields in global mode; curated requests keep the original v2 body.
+function discoveryFields({ mode, top_k, min_center_distance_km, exclude_known } = {}) {
+  if (mode !== 'global') return {};
+  return { mode, top_k, min_center_distance_km, exclude_known };
+}
 
 let implPromise = null;
 function impl() {
@@ -86,7 +98,8 @@ function impl() {
   return implPromise;
 }
 
-const METHODS = ['getHealth', 'getReferences', 'getParents', 'getSources', 'getCandidate', 'getRankings', 'postDecision', 'postChat'];
+const METHODS = ['getHealth', 'getReferences', 'getParents', 'getSources', 'getCandidate', 'getRankings', 'postDecision',
+  'postChat', 'createPin', 'getDiscover', 'getGlobalCandidate'];
 export const api = Object.fromEntries(
   METHODS.map((m) => [m, (...args) => impl().then((i) => i[m](...args))]),
 );

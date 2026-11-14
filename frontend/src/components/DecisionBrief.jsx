@@ -63,7 +63,16 @@ export default function DecisionBrief({ state, reference, sources, onConfirm, on
             <dt>Alternative</dt><dd>{d.alternative_candidate_id ?? 'none (single result)'}</dd>
             <dt>Profile / weights</dt><dd>{d.profile}: slope {fmt(d.weights?.slope, 2)}, relief {fmt(d.weights?.relief, 2)}, variation {fmt(d.weights?.variation, 2)}</dd>
             <dt>Versions</dt><dd>pipeline {d.pipeline_version}, score {d.score_version}, corpus <span className="mono">{d.corpus_version}</span></dd>
-            <dt>Search scope</dt><dd>{d.search_scope?.parents} parent regions, {d.search_scope?.valid_windows} valid of {d.search_scope?.planned_windows} planned windows</dd>
+            {d.mode === 'global' ? (
+              <>
+                <dt>Search scope</dt><dd>{d.search_scope?.valid_windows?.toLocaleString()} valid windows, {d.search_scope?.coverage}; results ≥{d.search_scope?.min_center_distance_km} km apart</dd>
+                <dt>Reference</dt><dd>{d.reference?.name} ({d.reference?.body}, {fmt(d.reference?.center?.lat, 2)}°, {fmt(d.reference?.center?.lon, 2)}°)</dd>
+                <dt>Selected location</dt><dd>{fmt(d.selected_center?.lat, 4)}°, {fmt(d.selected_center?.lon, 4)}° (WGS84)</dd>
+                <dt>Known analog site?</dt><dd>{d.selected_known_analog ? `Yes: ${d.selected_known_analog.name}` : 'Not in our short list of well-known analog sites (not a first-discovery claim)'}</dd>
+              </>
+            ) : (
+              <><dt>Search scope</dt><dd>{d.search_scope?.parents} parent regions, {d.search_scope?.valid_windows} valid of {d.search_scope?.planned_windows} planned windows</dd></>
+            )}
           </dl>
 
           <h3>Measured evidence</h3>

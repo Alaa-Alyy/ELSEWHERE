@@ -51,9 +51,14 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def write_sources(body: str, records: list[dict]) -> None:
+def write_sources(body: str, records: list[dict], merge: bool = False) -> None:
+    """Write data/sources/<body>_sources.json. merge=True keeps existing records with other ids."""
     SOURCES.mkdir(parents=True, exist_ok=True)
     out = SOURCES / f"{body}_sources.json"
+    if merge and out.exists():
+        old = json.loads(out.read_text(encoding="utf-8-sig")).get("items", [])
+        new_ids = {r["id"] for r in records}
+        records = [r for r in old if r["id"] not in new_ids] + records
     out.write_text(json.dumps({"schema_version": "2.0", "items": records}, indent=2), encoding="utf-8")
     print(f"wrote {out.relative_to(ROOT)}")
 
@@ -298,12 +303,109 @@ def fetch_earth(list_only: bool) -> None:
     write_sources("earth", records)
 
 
+# --------------------------------------------------------------------------- #
+# Global products for discovery mode (pin anywhere / search all Earth land)
+# --------------------------------------------------------------------------- #
+LDEM64_URL = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_64"
+CMR_GRANULES = "https://cmr.earthdata.nasa.gov/search/granules.json?short_name=SRTMGL30&version=002&page_size=100"
+SRTM30_URL = "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL30.002/{g}/{g}.zip"
+
+
+def _plain_download(url: str, out: Path, retries: int = 3) -> None:
+    for attempt in range(1, retries + 1):
+        try:
+            tmp = out.with_suffix(out.suffix + ".part")
+            with urllib.request.urlopen(url, timeout=300) as r, open(tmp, "wb") as f:
+                if "html" in r.headers.get("Content-Type", ""):
+                    raise RuntimeError("got HTML instead of data")
+                expected = int(r.headers.get("Content-Length") or 0)
+                while chunk := r.read(1 << 20):
+                    f.write(chunk)
+            if tmp.stat().st_size == 0 or (expected and tmp.stat().st_size != expected):
+                raise RuntimeError(f"incomplete download {tmp.stat().st_size}/{expected}")
+            tmp.replace(out)
+            return
+        except (urllib.error.URLError, RuntimeError, TimeoutError) as e:
+            print(f"  attempt {attempt}/{retries} failed: {e}")
+            if attempt == retries:
+                raise
+            time.sleep(5 * attempt)
+
+
+def fetch_moon_global() -> None:
+    """LOLA LDEM_64 (64 px/deg, ~474 m) global lunar DEM from PDS; one 531 MB download."""
+    d = RAW / "moon" / "global"
+    d.mkdir(parents=True, exist_ok=True)
+    for ext in (".lbl", ".img"):
+        out = d / f"ldem_64{ext}"
+        if not out.exists():
+            print(f"downloading {out.name} ...")
+            _plain_download(LDEM64_URL + ext, out)
+    img = d / "ldem_64.img"
+    rec = {
+        "id": "moon-lola-ldem-64",
+        "title": "LRO LOLA gridded DEM LDEM_64 (global, 64 pixels/degree)",
+        "agency": "NASA / PDS Geosciences Node",
+        "product": "LRO-L-LOLA-4-GDR-V1.0 LDEM_64",
+        "version": "unknown (see PDS label)",
+        "landing_url": "https://pds-geosciences.wustl.edu/missions/lro/lola.htm",
+        "download_url": LDEM64_URL + ".img",
+        "downloaded_at_utc": now_utc(),
+        "filename": f"data/raw/moon/global/{img.name}",
+        "sha256": sha256(img),
+        "units": "int16 x 0.5 = meters above 1737.4 km sphere (per PDS label SCALING_FACTOR/OFFSET; verify)",
+        "native_resolution": "64 pixels/degree (~474 m at equator)",
+        "native_crs_wkt": "Simple cylindrical, Moon sphere R=1737400 m, east longitude 0..360 (PDS label)",
+        "citation": "Smith, D.E., et al. (2010), LOLA experiment, Space Sci. Rev. 150, 209-241; LRO LOLA GDR, NASA PDS.",
+        "license_or_usage_notes": "NASA PDS public data; cite LOLA team.",
+    }
+    write_sources("moon", [rec], merge=True)
+
+
+def fetch_earth_global() -> None:
+    """SRTMGL30 v002 (30 arc-second, ~1 km) global land tiles; needs EARTHDATA_TOKEN."""
+    token = os.environ.get("EARTHDATA_TOKEN")
+    if not token:
+        raise SystemExit("Set EARTHDATA_TOKEN (Earthdata Login -> Generate Token) and rerun.")
+    with urllib.request.urlopen(CMR_GRANULES, timeout=60) as r:
+        granules = sorted(e["title"] for e in json.load(r)["feed"]["entry"])
+    print(f"{len(granules)} SRTMGL30 granules")
+    d = RAW / "earth" / "global"
+    d.mkdir(parents=True, exist_ok=True)
+    records = []
+    for g in granules:
+        out = d / f"{g}.zip"
+        url = SRTM30_URL.format(g=g)
+        if not out.exists():
+            print(f"downloading {g} ...")
+            download(url, out, token)
+        records.append({
+            "id": f"earth-srtmgl30-{g.split('.')[0]}",
+            "title": f"SRTMGL30 v002 tile {g.split('.')[0]}",
+            "agency": "NASA / USGS LP DAAC",
+            "product": "SRTMGL30",
+            "version": "002",
+            "landing_url": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL30.002",
+            "download_url": url,
+            "downloaded_at_utc": now_utc(),
+            "filename": f"data/raw/earth/global/{out.name}",
+            "sha256": sha256(out),
+            "units": "meters (int16, EGM96 geoid heights)",
+            "native_resolution": "30 arc-second (~926 m at equator)",
+            "native_crs_wkt": "WGS 84 geographic (EPSG:4326)",
+            "citation": "NASA JPL (2013). NASA Shuttle Radar Topography Mission Global 30 arc second V002. NASA LP DAAC. https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL30.002",
+            "license_or_usage_notes": "NASA public data; no restrictions on reuse; cite the DOI.",
+        })
+    write_sources("earth_global", records)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("body", choices=["mars", "moon", "earth"])
+    ap.add_argument("body", choices=["mars", "moon", "earth", "moon-global", "earth-global"])
     ap.add_argument("--list", action="store_true", help="earth: only print required tiles")
     a = ap.parse_args()
-    {"mars": fetch_mars, "moon": fetch_moon}.get(a.body, lambda: fetch_earth(a.list))()
+    {"mars": fetch_mars, "moon": fetch_moon, "moon-global": fetch_moon_global,
+     "earth-global": fetch_earth_global}.get(a.body, lambda: fetch_earth(a.list))()
 
 
 if __name__ == "__main__":
