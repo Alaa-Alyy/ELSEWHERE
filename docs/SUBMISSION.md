@@ -33,7 +33,7 @@ reproducible Mission Decision Brief.
 LDEM_64, ~474 m; LDEM_80S 80 m near the south pole) on a 3D globe; the 20 km window is measured with the same
 pipeline. Earth is then searched over all land between 56°S and 60°N: NASA SRTMGL30 (30 arc-second) is run
 through the identical 100 km parent pipeline on a 90 km lattice, giving a global corpus of 20 km windows
-(10 km stride). Results are at least 100 km apart and labelled when they fall inside a short list of
+(10 km stride): 53,288 parents, 1,143,707 valid windows. Results are at least 100 km apart and labelled when they fall inside a short list of
 well-known analog areas. In a Khaybar comparison of the same 81 windows, SRTMGL30 vs SRTMGL1 agreed closely on
 slope distribution (median distance 0.012) and relief (ratio 0.996) but gave ~20 % lower local height
 variation.
@@ -45,8 +45,8 @@ variation.
 
 - Terrain only, at kilometre scale. Soil/regolith, temperature, illumination, ice, biology, gravity,
   radiation, atmosphere, access and permits are not established.
-- Limited corpus of 3 Earth regions: results are the closest available windows, not a global best analog
-  and not previously unknown discoveries.
+- Curated mode searches only 3 Earth regions. In both modes results are the closest available windows,
+  not a "best analog" and not previously unknown discoveries.
 - The similarity index is a heuristic, not a probability; overlapping windows are correlated.
 - Not a landing-safety, rover-route or field-validated assessment.
 

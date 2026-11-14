@@ -1,0 +1,171 @@
+{
+  "schema_version": "2.0",
+  "pipeline_version": "2.0",
+  "kind": "global_earth_windows",
+  "built_at_utc": "2026-11-14T01:52:40Z",
+  "corpus_version": "sha256:e483cf6147a4d0bd2a15acdd416bde7b8904721824e891c203e794fff55fe75a",
+  "input_product": "NASA SRTMGL30 v002 (30 arc-second)",
+  "inputs": [
+    {
+      "source_id": "earth-srtmgl30-W020N40",
+      "sha256": "c46863d938f760b92525d33f44e209d15a5da060ee9da0b8d9d74afc3ea7551e"
+    },
+    {
+      "source_id": "earth-srtmgl30-e020n40",
+      "sha256": "28df7d5b5bbb204020169f9ff47009581244bc6f9dd2f805e2da5bb2ac1ac3a0"
+    },
+    {
+      "source_id": "earth-srtmgl30-e020n90",
+      "sha256": "edfd23b41f7375d158ba6b7221d7d9b93e78dc3422ca180e8e97d24b3f1c0324"
+    },
+    {
+      "source_id": "earth-srtmgl30-e020s10",
+      "sha256": "b89bc194f52e609d1f95aa53c9502cfb7f68502603e0de9d15e8d2268e984e58"
+    },
+    {
+      "source_id": "earth-srtmgl30-e060n40",
+      "sha256": "4476b2421f4adc92bec0a93db96d54f0f8a11cb5287d98bbd5f3dc290a6fd32b"
+    },
+    {
+      "source_id": "earth-srtmgl30-e060n90",
+      "sha256": "9be249ce9d3bb9edbb0a0e36de86e723df3a37b3c43e622ad4a7fa29a7064c88"
+    },
+    {
+      "source_id": "earth-srtmgl30-e060s10",
+      "sha256": "ef66529fffb96a98b343d9526a7b546f2ce26035046b08005b151923e125cdfd"
+    },
+    {
+      "source_id": "earth-srtmgl30-e100n40",
+      "sha256": "bac2d2ac2fa777bf1732cbc10a54da91299accd1e03bc69598d1838d622c3de1"
+    },
+    {
+      "source_id": "earth-srtmgl30-e100n90",
+      "sha256": "d7fa4d487ea5d95eef6314937e16db772bdb39a2ad615090417c5680f8bf1048"
+    },
+    {
+      "source_id": "earth-srtmgl30-e100s10",
+      "sha256": "478c27820c19afbfca6615ff9d9b41bdee9eb7881f753ac0083bfa518c0dc0d7"
+    },
+    {
+      "source_id": "earth-srtmgl30-e140n40",
+      "sha256": "f7ece4cb275a7f364e3c78fdcefd7fc47cf856afe32d06d64fa2683cfe2b00ea"
+    },
+    {
+      "source_id": "earth-srtmgl30-e140n90",
+      "sha256": "5d6bbcf032805d13fff66ca4bfc1b3a022876242f9ae1079580d214a8fd392dd"
+    },
+    {
+      "source_id": "earth-srtmgl30-e140s10",
+      "sha256": "86c38b4cc35cdd7d5519b0ab4ee180ec878fef129b434f7019d6f8b103327a6a"
+    },
+    {
+      "source_id": "earth-srtmgl30-w020n90",
+      "sha256": "cb5d5a07c09b1ec005d8a270998f292a9c7aa82c7b217596ca95c8bdabe033bb"
+    },
+    {
+      "source_id": "earth-srtmgl30-w020s10",
+      "sha256": "6d9b1cee30e6cf71a2b46ee45af1b7263b966955188927f4a9fa0b4ba39912bf"
+    },
+    {
+      "source_id": "earth-srtmgl30-w060n40",
+      "sha256": "4341957949ece37c04cfc79680a900994c849f5f5d9ab96985b6d9e27d7fb97e"
+    },
+    {
+      "source_id": "earth-srtmgl30-w060n90",
+      "sha256": "a069c2b57afe6a2c82c14b95130c2c901de924e0b58313ea7cd6f8ff2e5ad7d6"
+    },
+    {
+      "source_id": "earth-srtmgl30-w060s10",
+      "sha256": "8f1b9406e2354a584e24c830351ce8a9be0771648b0ed5806b96f58e4247e090"
+    },
+    {
+      "source_id": "earth-srtmgl30-w100n40",
+      "sha256": "1948b78533ee2243955d2e67423d44d314e4fab4a2d9912b6d536f988aa28bb6"
+    },
+    {
+      "source_id": "earth-srtmgl30-w100n90",
+      "sha256": "44f2e031f1a5d5f192e110b6cb5b0c716eb240745d7834ebfd42e56ab4ec63fd"
+    },
+    {
+      "source_id": "earth-srtmgl30-w100s10",
+      "sha256": "e395c163ab5a1bff295c15d9dd13e3e9b2ede53005f917b18024f7eb769929dc"
+    },
+    {
+      "source_id": "earth-srtmgl30-w140n40",
+      "sha256": "6bca395f394ecd97c264d16bf0549d1729491f28001e9cef2f006306681fa6fe"
+    },
+    {
+      "source_id": "earth-srtmgl30-w140n90",
+      "sha256": "1dab49e83f4e86c6a55dd15c5ac1ad1f359dce1545d3a157b7f06c8d2d521fa2"
+    },
+    {
+      "source_id": "earth-srtmgl30-w140s10",
+      "sha256": "2816473e3612b9bfca7fea66fcad95d019363ce7412001548a22d4f387d20586"
+    },
+    {
+      "source_id": "earth-srtmgl30-w180n40",
+      "sha256": "52fc9f8f175307546255215e7ddbedd1b6a31d33860f6837726d45b9891d3de3"
+    },
+    {
+      "source_id": "earth-srtmgl30-w180n90",
+      "sha256": "a4354a3918ff0556e9f844291242d299f16820a1fdb638eb6bd0c42244ba5834"
+    },
+    {
+      "source_id": "earth-srtmgl30-w180s10",
+      "sha256": "f045c3ea24102c3d6c7ff5c020e2a7017edb0122d87e3753d707be1d245aa668"
+    }
+  ],
+  "coverage": {
+    "lat_min": -56.0,
+    "lat_max": 60.0,
+    "note": "SRTM-measured latitudes only"
+  },
+  "lattice": {
+    "parent_size_km": 100,
+    "spacing_km": 90.0,
+    "parents_total": 53288,
+    "parents_processed": 53288,
+    "limit": null
+  },
+  "valid_windows": 1143707,
+  "settings": {
+    "schema_version": "2.0",
+    "pipeline_version": "2.0",
+    "score_version": "2.0",
+    "resolution_m": 1000.0,
+    "parent_size_cells": 100,
+    "window_size_cells": 20,
+    "stride_cells": 10,
+    "buffer_cells": 2,
+    "min_cell_sample_fraction": 0.5,
+    "slope_bin_edges_deg": [
+      0.0,
+      1.0,
+      3.0,
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      45.0,
+      90.0
+    ],
+    "percentile_method": "linear",
+    "min_valid_fraction": 0.95,
+    "min_valid_cells": 100,
+    "max_exact_zero_fraction": 0.05,
+    "profiles": {
+      "terrain_general": 0.4,
+      "slope_focus": 0.7
+    },
+    "stabilization_floor_m": 1.0,
+    "min_center_distance_km": 20.0
+  },
+  "method": "Person 1 v2.0 pipeline per parent: local AEQD (WGS84), area average to 1000 m, Horn slope, 8-bin histogram, P95-P5 relief, median local deviation, water guard; only valid windows stored.",
+  "limitations": [
+    "SRTMGL30 is a ~1 km product; the 3 curated parents use SRTMGL1 (30 m) - values can differ slightly.",
+    "Land between 56S and 60N only (SRTM coverage); polar and high-latitude terrain not searched.",
+    "Overlapping windows are correlated samples."
+  ],
+  "elapsed_s": 6810.8,
+  "raw_dir": "data\\raw\\earth\\global"
+}

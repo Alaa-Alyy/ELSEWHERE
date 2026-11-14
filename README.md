@@ -7,8 +7,9 @@ NASA Space Apps 2026 - *Identify Earth Locations that Analog the Permanent Moon 
 MissionMatch finds 20 km Earth terrain windows whose kilometre-scale terrain (slope distribution, relief,
 local height variation) is closest to a chosen 20 km Moon or Mars reference. You can compare a window
 with an alternative, change slope priority, and confirm a traceable Mission Decision Brief.
-It searches a **limited corpus** (3 Earth regions, 243 planned windows, 1000 m grid). It is not a global
-search, not a probability, and not field validation.
+Two modes: **discovery** (pin anywhere on a 3D Mars/Moon globe, search 1,143,707 Earth land windows
+56°S-60°N from NASA SRTMGL30 ~1 km) and **curated** (3 Earth regions, 243 planned windows, SRTMGL1 30 m).
+The index is a heuristic, not a probability, not field validation and not a first-discovery claim.
 
 | Part | Folder | Owner | Docs |
 |---|---|---|---|
@@ -89,7 +90,7 @@ No secret ever goes into the frontend.
 ## Tests
 
 ```powershell
-.venv\Scripts\python -m pytest tests\analysis tests\backend tests\integration -q
+.venv\Scripts\python -m pytest tests\analysis tests\backend tests\integration tests\discovery -q
 cd frontend; npm test
 ```
 
