@@ -37,7 +37,7 @@ export function reasonMetric(codes = [], kind) {
   return null;
 }
 
-function ScoreRing({ score }) {
+export function ScoreRing({ score }) {
   const v = Math.max(0, Math.min(100, Number(score) || 0));
   const r = 24; const c = 2 * Math.PI * r;
   return (
@@ -51,7 +51,7 @@ function ScoreRing({ score }) {
   );
 }
 
-function place(it, ranking, parents) {
+export function place(it, ranking, parents) {
   if (ranking.mode === 'global' && it.center) {
     return `Earth window ${fmt(Math.abs(it.center.lat), 2)}°${it.center.lat >= 0 ? 'N' : 'S'}, ${fmt(Math.abs(it.center.lon), 2)}°${it.center.lon >= 0 ? 'E' : 'W'}`;
   }
@@ -59,7 +59,7 @@ function place(it, ranking, parents) {
 }
 
 // Climate chip (NASA POWER, context only - never part of the index).
-function ClimateChip({ climate, mountainous: steep }) {
+export function ClimateChip({ climate, mountainous: steep }) {
   if (!climate) return null;
   if (climate.pending) return <span className="chip clim">climate...</span>;
   if (climate.error) return <span className="chip clim">climate unavailable</span>;
@@ -77,7 +77,7 @@ function ClimateChip({ climate, mountainous: steep }) {
   );
 }
 
-export default function CandidateList({ ranking, pending, error, parents, selectedId, notice, onSelect, onBack, onNext, experiment, climateById = {}, detailsById = {} }) {
+export default function CandidateList({ ranking, pending, error, parents, selectedId, notice, onSelect, onBack, onNext, experiment, climateById = {}, detailsById = {}, onOpenDossier }) {
   const items = ranking?.items || [];
   return (
     <div className="panel-section">
@@ -88,8 +88,16 @@ export default function CandidateList({ ranking, pending, error, parents, select
       {pending && <p className="pending" role="status"><span className="spinner" aria-hidden="true" /> Searching the corpus...</p>}
       {error && <p className="error" role="alert">{friendlyMessage(error)}</p>}
       {notice && <p className="notice" role="alert">{notice}</p>}
-      {ranking && <ScopeLine scope={ranking.scope} parentsCount={parents.length || 3} mode={ranking.mode} />}
-      {ranking?.warnings?.filter((w) => !w.startsWith('DEMO')).map((w) => <p key={w} className="notice small">{w}</p>)}
+      {ranking && (
+        <details className="scope-box small">
+          <summary>
+            Searched {ranking.mode === 'global' ? `${(ranking.scope?.valid_windows || 0).toLocaleString()} Earth windows` : `${parents.length || 3} curated regions`}
+            {ranking.warnings?.some((w) => !w.startsWith('DEMO')) ? ' · caveats' : ''}
+          </summary>
+          <ScopeLine scope={ranking.scope} parentsCount={parents.length || 3} mode={ranking.mode} />
+          {ranking.warnings?.filter((w) => !w.startsWith('DEMO')).map((w) => <p key={w} className="notice small">{w}</p>)}
+        </details>
+      )}
 
       {items.length > 0 && (
         <details className="why-high small" data-testid="why-high">
@@ -163,6 +171,11 @@ export default function CandidateList({ ranking, pending, error, parents, select
                   Terrain similarity index <b>{fmt(it.score, 2)}</b> <span className="muted">/ 100</span>
                 </span>
               </button>
+              {selected && onOpenDossier && (
+                <button className="btn small primary open-dossier" onClick={() => onOpenDossier(it.candidate_id)} data-sound="open">
+                  📂 Open site dossier: images, 3D, similar / different, research
+                </button>
+              )}
             </li>
           );
         })}

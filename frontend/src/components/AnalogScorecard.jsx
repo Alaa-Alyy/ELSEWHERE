@@ -16,17 +16,38 @@ function Verdict({ band }) {
   return <span className={`verdict ${band.key}`}>{band.label}</span>;
 }
 
+/** Shared verdict summary (used by the table and the dossier overview). Null when data is missing. */
+export function scorecardSummary({ reference, candidate, rankItem, climate }) {
+  const body = reference?.body;
+  const m = candidate?.metrics;
+  if (!body || !BODY_FACTS[body] || !reference?.metrics || !m) return null;
+  const d = rankItem?.distances;
+  const terrainBands = ['slope', 'relief', 'variation'].map((k) => closenessBand(d?.[k]));
+  const terrainSimilar = terrainBands.filter((b) => b.key === 'very' || b.key === 'similar').length;
+  const env = ENVIRONMENT_ROWS.map((r) => ({ ...r, v: r.verdict(body) }));
+  const envSimilar = env.filter((r) => r.v === 'similar').map((r) => r.label.toLowerCase());
+  const envDifferent = env.filter((r) => r.v === 'different').map((r) => r.label.toLowerCase());
+  const cl = climate?.item;
+  const mountains = isMountainous(m);
+  const dry = cl ? drynessVerdict(cl.aridity?.key, mountains, cl.precipitation_mm_per_year) : null;
+  if (dry?.key === 'similar') envSimilar.push('dryness');
+  if (dry?.key === 'different') envDifferent.push(`dryness (wet, ${fmt(cl.precipitation_mm_per_year, 0)} mm/yr)`);
+  if (cl) envDifferent.push('temperature');
+  return { body, terrainBands, terrainSimilar, env, envSimilar, envDifferent, cl, mountains, dry };
+}
+
 /**
  * "What is similar, how similar, what is different" for one Earth window vs the Moon/Mars reference.
  * Terrain rows: measured values (same pipeline) + the SERVER's per-metric distances.
  * Environment rows: body-wide NASA fact-sheet values. Unmeasured dimensions are listed, never guessed.
  */
 export default function AnalogScorecard({ reference, candidate, rankItem, mode, climate }) {
-  const body = reference?.body;
-  const t = reference?.metrics;
-  const m = candidate?.metrics;
+  const S = scorecardSummary({ reference, candidate, rankItem, climate });
+  if (!S) return null;
+  const { body, terrainBands, terrainSimilar, env, envSimilar, envDifferent, cl, mountains, dry } = S;
+  const t = reference.metrics;
+  const m = candidate.metrics;
   const d = rankItem?.distances;
-  if (!body || !BODY_FACTS[body] || !t || !m) return null;
   const where = BODY_NAME[body];
 
   const terrain = [
@@ -46,17 +67,6 @@ export default function AnalogScorecard({ reference, candidate, rankItem, mode, 
       note: mode === 'global' ? 'Earth value from ~1 km SRTMGL30 reads ~20% low vs 30 m data.' : null,
     },
   ];
-  const terrainBands = terrain.map((r) => closenessBand(r.dist));
-  const terrainSimilar = terrainBands.filter((b) => b.key === 'very' || b.key === 'similar').length;
-  const env = ENVIRONMENT_ROWS.map((r) => ({ ...r, v: r.verdict(body) }));
-  const envSimilar = env.filter((r) => r.v === 'similar').map((r) => r.label.toLowerCase());
-  const envDifferent = env.filter((r) => r.v === 'different').map((r) => r.label.toLowerCase());
-  const cl = climate?.item;
-  const mountains = isMountainous(m);
-  const dry = cl ? drynessVerdict(cl.aridity?.key, mountains, cl.precipitation_mm_per_year) : null;
-  if (dry?.key === 'similar') envSimilar.push('dryness');
-  if (dry?.key === 'different') envDifferent.push(`dryness (wet, ${fmt(cl.precipitation_mm_per_year, 0)} mm/yr)`);
-  if (cl) envDifferent.push('temperature');
   const bc = BODY_CLIMATE[body];
 
   return (
