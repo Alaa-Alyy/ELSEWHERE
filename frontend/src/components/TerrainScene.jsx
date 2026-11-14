@@ -109,7 +109,9 @@ export default function TerrainScene({ left, right, leftPalette, rightPalette })
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1, 0);
     controls.enablePan = false; controls.enableDamping = true;
-    controls.minDistance = 12; controls.maxDistance = 40; controls.maxPolarAngle = Math.PI * 0.47;
+    // No wheel zoom: scrolling the dossier over the canvas must scroll the page, not zoom the scene.
+    controls.enableZoom = false;
+    controls.maxPolarAngle = Math.PI * 0.47;
     scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x30243a, 1.1));
     const sun = new THREE.DirectionalLight(0xfff2dd, 2.2);
     sun.position.set(-8, 14, 10);
