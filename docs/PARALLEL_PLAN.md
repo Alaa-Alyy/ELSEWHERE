@@ -6,6 +6,14 @@
 
 Story anchor (verbatim): **"Exploring other worlds starts with understanding our own."**
 
+> **Scope change (2026-11-14, requested by Person 3, team to confirm): discovery mode.** The challenge asks
+> to search Earth "globally and systematically" for possibly unrecognized analogs, so v2 now ALSO offers:
+> a 3D Mars/Moon globe (NASA Trek imagery) where any location can be pinned and measured with the same
+> reference pipeline; and a search over all Earth land 56S-60N using NASA SRTMGL30 (~1 km) run through
+> Person 1's unchanged parent pipeline on a 90 km lattice. The original curated mode (3 parents, SRTMGL1,
+> 2 vetted references) is kept unchanged. This supersedes "no full-Earth scan" and "no 3D Moon/Mars globe"
+> in the table below. Still out: trained models, route planner, rover simulator, discovery/approval claims.
+
 ## Frozen scope
 
 | In | Out (do not add) |

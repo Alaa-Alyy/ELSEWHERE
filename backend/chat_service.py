@@ -122,10 +122,10 @@ class ChatService:
         return cands, srcs
 
     # ------------------------------------------------------------------ call
-    def answer(self, repo: DataRepository, search: SearchAdapter, req) -> dict:
+    def answer(self, repo: DataRepository, search: SearchAdapter, req, context_builder=None) -> dict:
         if not self.available:
             raise ChatUnavailable("The explanation assistant is not configured on this server.", retryable=False)
-        ctx = self.build_context(repo, search, req)
+        ctx = _round(context_builder(req)) if context_builder else self.build_context(repo, search, req)
         messages = [{"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "system", "content": "CONTEXT (trusted evidence, JSON):\n" + json.dumps(ctx, ensure_ascii=False)}]
         for turn in req.history[-6:]:

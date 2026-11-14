@@ -7,8 +7,9 @@ NASA Space Apps 2026 - *Identify Earth Locations that Analog the Permanent Moon 
 MissionMatch finds 20 km Earth terrain windows whose kilometre-scale terrain (slope distribution, relief,
 local height variation) is closest to a chosen 20 km Moon or Mars reference. You can compare a window
 with an alternative, change slope priority, and confirm a traceable Mission Decision Brief.
-It searches a **limited corpus** (3 Earth regions, 243 planned windows, 1000 m grid). It is not a global
-search, not a probability, and not field validation.
+Two modes: **discovery** (pin anywhere on a 3D Mars/Moon globe, search 1,143,707 Earth land windows
+56°S-60°N from NASA SRTMGL30 ~1 km) and **curated** (3 Earth regions, 243 planned windows, SRTMGL1 30 m).
+The index is a heuristic, not a probability, not field validation and not a first-discovery claim.
 
 | Part | Folder | Owner | Docs |
 |---|---|---|---|
@@ -48,6 +49,24 @@ npm run dev            # http://127.0.0.1:5173
 npm run build; npm run check:bundle; npm run preview   # production check, http://127.0.0.1:4173
 ```
 
+## Discovery mode (pin anywhere, search all Earth land)
+
+- **Pin**: click anywhere on the 3D Mars or Moon globe (or a named place). The backend measures that
+  20 km window with the same pipeline as the vetted references, and the UI shows its terrain fingerprint
+  before any Earth search. Mars: NASA/USGS MOLA 463 m (range-read). Moon: NASA LOLA LDEM_64 (~474 m)
+  and, south of 80.5°S, LOLA LDEM_80S 80 m.
+- **Whole-Earth search**: every Earth land window 56°S-60°N from NASA SRTMGL30 (~1 km), produced by
+  Person 1's parent pipeline on a 90 km lattice; the same fixed distance ranks them; results ≥100 km apart;
+  optional "hide well-known analog sites" (labelling only, never a first-discovery claim).
+- **No training**: it is nearest-neighbour similarity search with a fixed, explainable distance. There are no
+  labelled analog pairs to train on, so nothing is learned and every result is explained metric by metric.
+
+```powershell
+.venv\Scripts\python scripts\fetch_data.py moon-global                             # 531 MB, no login
+$env:EARTHDATA_TOKEN='<token>'; .venv\Scripts\python scripts\fetch_data.py earth-global   # 27 tiles, 267 MB
+.venv\Scripts\python -m discovery.build_global      # ~2 h on 16 cores -> data/processed/global/
+```
+
 ## Demo vs real data
 
 | Mode | Backend | Frontend | Shown as |
@@ -71,7 +90,7 @@ No secret ever goes into the frontend.
 ## Tests
 
 ```powershell
-.venv\Scripts\python -m pytest tests\analysis tests\backend tests\integration -q
+.venv\Scripts\python -m pytest tests\analysis tests\backend tests\integration tests\discovery -q
 cd frontend; npm test
 ```
 

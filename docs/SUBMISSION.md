@@ -29,12 +29,24 @@ NearestNeighbors (brute force, no training). Up to three results at least 20 km 
 can change slope priority, compare a selected window with an alternative per metric, and confirm a
 reproducible Mission Decision Brief.
 
+**Discovery mode.** Users can pin any Mars location (NASA/USGS MOLA 463 m) or Moon location (NASA LOLA
+LDEM_64, ~474 m; LDEM_80S 80 m near the south pole) on a 3D globe; the 20 km window is measured with the same
+pipeline. Earth is then searched over all land between 56°S and 60°N: NASA SRTMGL30 (30 arc-second) is run
+through the identical 100 km parent pipeline on a 90 km lattice, giving a global corpus of 20 km windows
+(10 km stride): 53,288 parents, 1,143,707 valid windows. Results are at least 100 km apart and labelled when they fall inside a short list of
+well-known analog areas. In a Khaybar comparison of the same 81 windows, SRTMGL30 vs SRTMGL1 agreed closely on
+slope distribution (median distance 0.012) and relief (ratio 0.996) but gave ~20 % lower local height
+variation.
+
 ## Limitations (keep in the submission)
+
+- Global discovery uses ~1 km Earth data (SRTMGL30) and covers 56°S-60°N only; local height variation is
+  biased low vs 30 m data. Being outside our known-analog list is not evidence of a new discovery.
 
 - Terrain only, at kilometre scale. Soil/regolith, temperature, illumination, ice, biology, gravity,
   radiation, atmosphere, access and permits are not established.
-- Limited corpus of 3 Earth regions: results are the closest available windows, not a global best analog
-  and not previously unknown discoveries.
+- Curated mode searches only 3 Earth regions. In both modes results are the closest available windows,
+  not a "best analog" and not previously unknown discoveries.
 - The similarity index is a heuristic, not a probability; overlapping windows are correlated.
 - Not a landing-safety, rover-route or field-validated assessment.
 
@@ -43,7 +55,10 @@ reproducible Mission Decision Brief.
 - NASA JPL (2013). SRTM Global 1 arc second, SRTMGL1 v003. doi:10.5067/MEaSUREs/SRTM/SRTMGL1.003
 - Barker, M.K., et al. (2023), Planet. Sci. J., doi:10.3847/PSJ/acf3e1; dataset doi:10.60903/gsfcpgda-lola-spole
 - Smith, D.E., et al. (2001), JGR 106(E10), 23689-23722 (MOLA); USGS Astrogeology MOLA 463 m DEM mosaic
+- NASA JPL (2013). SRTM Global 30 arc second, SRTMGL30 v002. doi:10.5067/MEaSUREs/SRTM/SRTMGL30.002
+- Smith, D.E., et al. (2010), LOLA, Space Sci. Rev. 150; LRO LOLA GDR LDEM_64, NASA PDS Geosciences Node
 - Display imagery: NASA EOSDIS GIBS / Worldview, Blue Marble Shaded Relief and Bathymetry
+- Display imagery: NASA Solar System Treks (Mars Trek MOLA colour shaded relief; Moon Trek LRO WAC mosaic)
 
 ## AI disclosure
 

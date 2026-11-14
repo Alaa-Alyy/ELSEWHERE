@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, within, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -9,6 +9,14 @@ vi.mock('../../frontend/src/components/EarthGlobe.jsx', () => ({
       {items.map((i) => (
         <button key={i.candidate_id} data-testid={`marker-${i.candidate_id}`} onClick={() => onSelect(i.candidate_id)}>marker</button>
       ))}
+    </div>
+  ),
+}));
+
+vi.mock('../../frontend/src/components/PlanetGlobe.jsx', () => ({
+  default: ({ body, onPick }) => (
+    <div data-testid="planet-globe" data-body={body}>
+      <button data-testid="planet-click" onClick={() => onPick(-4.6, 137.4)}>click planet</button>
     </div>
   ),
 }));
@@ -47,7 +55,8 @@ describe('fixture journey', () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
     await userEvent.click(screen.getByRole('radio', { name: /Mars/ }));
-    await userEvent.click(screen.getByRole('button', { name: 'Search Earth windows' }));
+    await userEvent.click(screen.getByRole('radio', { name: /3 curated regions/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Search the 3 curated regions' }));
 
     await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
     expect(rankSpy.mock.calls.at(-1)[0]).toMatchObject({ reference_id: 'mars-jezero', profile: 'terrain_general', top_k: 3 });
@@ -82,13 +91,14 @@ describe('fixture journey', () => {
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
     await userEvent.click(screen.getByRole('radio', { name: /Moon/ }));
-    await userEvent.click(screen.getByRole('button', { name: 'Search Earth windows' }));
+    await userEvent.click(screen.getByRole('radio', { name: /3 curated regions/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Search the 3 curated regions' }));
     await waitFor(() => expect(rankSpy).toHaveBeenCalled());
     expect(rankSpy.mock.calls.at(-1)[0].reference_id).toBe('moon-south-pole-sector');
   });
 
   it('slope slider makes a real (debounced) request with the new weight', async () => {
-    const rankSpy = vi.spyOn(mockApi, 'getRankings');
+    const rankSpy = vi.spyOn(mockApi, 'getDiscover');   // skip path = global discovery by default
     render(<App />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip intro / Explore map directly' }));
     await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
@@ -101,3 +111,58 @@ describe('fixture journey', () => {
     expect(screen.getByTestId('ranking-change')).toBeInTheDocument();
   });
 });
+
+describe('discovery: pin anywhere, search all Earth', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('a globe click measures the pin BEFORE searching, then searches globally with the pin', async () => {
+    const pinSpy = vi.spyOn(mockApi, 'createPin');
+    const discSpy = vi.spyOn(mockApi, 'getDiscover');
+    const decSpy = vi.spyOn(mockApi, 'postDecision');
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
+    expect(screen.getByTestId('planet-globe').dataset.body).toBe('mars');
+    await userEvent.click(screen.getByTestId('planet-click'));
+    await waitFor(() => expect(pinSpy).toHaveBeenCalledWith({ body: 'mars', lat: -4.6, lon: 137.4 }));
+    expect(await screen.findByTestId('fingerprint')).toHaveTextContent(/Relief/);
+    expect(discSpy).not.toHaveBeenCalled();                     // nothing searched yet
+
+    await userEvent.click(screen.getByRole('button', { name: 'Search all Earth land' }));
+    await waitFor(() => expect(cardIds().length).toBeGreaterThan(0));
+    const q = discSpy.mock.calls.at(-1)[0];
+    expect(q.reference_id).toBe('pin-mars-4p60s-137p40e');
+    expect(q).toMatchObject({ top_k: 5, min_center_distance_km: 100, exclude_known: false });
+    expect(cardIds().length).toBeLessThanOrEqual(5);
+
+    await userEvent.click(document.querySelector('[data-candidate-id]'));
+    await userEvent.click(screen.getByRole('button', { name: 'Compare tradeoffs' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Go to decision' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm my choice' }));
+    await screen.findByTestId('decision-record');
+    expect(decSpy.mock.calls.at(-1)[0]).toMatchObject({ mode: 'global', reference_id: 'pin-mars-4p60s-137p40e', top_k: 5 });
+  });
+
+  it('a named place pins too, and switching body clears the pin', async () => {
+    const pinSpy = vi.spyOn(mockApi, 'createPin');
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
+    await userEvent.click(screen.getByRole('radio', { name: /Moon/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Tycho crater' }));
+    await waitFor(() => expect(pinSpy).toHaveBeenCalledWith({ body: 'moon', lat: -43.3, lon: -11.2 }));
+    expect(await screen.findByText(/Pinned moon window/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('radio', { name: /Mars/ }));
+    expect(screen.queryByText(/Pinned moon window/)).toBeNull();
+  });
+
+  it('curated mode refuses a pin (only vetted references)', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: 'Find our next training ground' }));
+    await userEvent.click(screen.getByTestId('planet-click'));
+    await screen.findByTestId('fingerprint');
+    await userEvent.click(screen.getByRole('radio', { name: /3 curated regions/ }));
+    expect(screen.getByRole('button', { name: 'Search the 3 curated regions' })).not.toBeDisabled();
+    expect(screen.queryByText(/Pinned mars window/)).toBeNull();   // switched back to the vetted reference
+  });
+});
+
+

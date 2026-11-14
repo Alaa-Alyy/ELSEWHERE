@@ -42,6 +42,23 @@
         ],
         "region_config": "data/config/moon_region.json"
       }
+    },
+    {
+      "id": "moon-lola-ldem-64",
+      "title": "LRO LOLA gridded DEM LDEM_64 (global, 64 pixels/degree)",
+      "agency": "NASA / PDS Geosciences Node",
+      "product": "LRO-L-LOLA-4-GDR-V1.0 LDEM_64",
+      "version": "unknown (see PDS label)",
+      "landing_url": "https://pds-geosciences.wustl.edu/missions/lro/lola.htm",
+      "download_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_64.img",
+      "downloaded_at_utc": "2026-11-13T23:44:53Z",
+      "filename": "data/raw/moon/global/ldem_64.img",
+      "sha256": "1c4958699d4cffd7e777d51421b6044bba300aa0bef286a544309efb082cdbd6",
+      "units": "int16 x 0.5 = meters above 1737.4 km sphere (per PDS label SCALING_FACTOR/OFFSET; verify)",
+      "native_resolution": "64 pixels/degree (~474 m at equator)",
+      "native_crs_wkt": "Simple cylindrical, Moon sphere R=1737400 m, east longitude 0..360 (PDS label)",
+      "citation": "Smith, D.E., et al. (2010), LOLA experiment, Space Sci. Rev. 150, 209-241; LRO LOLA GDR, NASA PDS.",
+      "license_or_usage_notes": "NASA PDS public data; cite LOLA team."
     }
   ]
 }

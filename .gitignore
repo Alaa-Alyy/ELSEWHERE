@@ -28,3 +28,6 @@ Thumbs.db
 # Local overrides (per machine)
 .env*.local
 .pytest_cache/
+
+# global build logs
+data/processed/global_build.*

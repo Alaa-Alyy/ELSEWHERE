@@ -22,7 +22,24 @@ def _finite_weight(v):
     return float(v)
 
 
-class DecisionRequest(_Strict):
+Mode = Literal["curated", "global"]
+
+
+class _DiscoveryFields(_Strict):
+    """Additive v2 fields for discovery mode (ignored in curated mode)."""
+    mode: Mode = "curated"
+    top_k: Optional[int] = Field(default=None, ge=1, le=10)
+    min_center_distance_km: Optional[float] = Field(default=None, ge=20, le=2000, allow_inf_nan=False)
+    exclude_known: Optional[bool] = None
+
+
+class PinRequest(_Strict):
+    body: Literal["mars", "moon"]
+    lat: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    lon: float = Field(ge=-360, le=360, allow_inf_nan=False)
+
+
+class DecisionRequest(_DiscoveryFields):
     reference_id: str = Field(pattern=ID_PATTERN)
     profile: Profile
     slope_weight: Optional[float] = None
@@ -40,7 +57,7 @@ class ChatTurn(_Strict):
     content: str = Field(max_length=4000)
 
 
-class ChatRequest(_Strict):
+class ChatRequest(_DiscoveryFields):
     message: str = Field(min_length=1, max_length=2000)
     reference_id: str = Field(pattern=ID_PATTERN)
     profile: Profile

@@ -8,10 +8,21 @@ export const PROFILES = {
   slope_focus: { label: 'Slope focus', defaultSlope: 0.7 },
 };
 
+export const SEARCH_MODES = {
+  global: { label: 'Whole Earth (discovery)', topK: 5 },
+  curated: { label: '3 curated regions (30 m SRTM)', topK: 3 },
+};
+
 export const initialState = {
   step: 'intro',
   body: 'mars',
   referenceId: REFERENCE_FOR_BODY.mars,
+  mode: 'global',             // 'global' = search all Earth land; 'curated' = the 3 SRTMGL1 parents
+  excludeKnown: false,        // global mode: skip results inside well-known analog areas
+  pin: null,                  // RegionRecord measured for a user pin (null = curated reference)
+  pinPending: false,
+  pinError: null,
+  pinSequence: 0,
   profile: 'terrain_general',
   slopeWeight: null, // null -> profile default (server returns the effective weights)
   ranking: null,
@@ -37,7 +48,8 @@ export const initialState = {
 
 // Settings that define a ranking/decision/chat context.
 export function contextKey(s) {
-  return [s.referenceId, s.profile, s.slopeWeight ?? 'default', s.selectedCandidateId ?? '-', s.alternativeCandidateId ?? '-'].join('|');
+  return [s.mode, s.excludeKnown ? 'xk' : 'all', s.referenceId, s.profile, s.slopeWeight ?? 'default',
+    s.selectedCandidateId ?? '-', s.alternativeCandidateId ?? '-'].join('|');
 }
 
 function defaultAlternative(items, selectedId) {
@@ -80,10 +92,40 @@ export function reducer(state, action) {
         ...invalidate(state),
         body: action.body,
         referenceId: REFERENCE_FOR_BODY[action.body],
+        pin: null, pinError: null, pinPending: false, pinSequence: state.pinSequence + 1,
         slopeWeight: null,
         step: state.step === 'intro' ? 'intro' : 'mission',
       };
     }
+
+    case 'SET_MODE': {
+      if (action.mode === state.mode) return state;
+      // curated mode only knows the two vetted references; a pin switches back to the body's reference
+      const keepPin = action.mode === 'global';
+      return {
+        ...invalidate(state), mode: action.mode,
+        pin: keepPin ? state.pin : null,
+        referenceId: keepPin && state.pin ? state.pin.id : REFERENCE_FOR_BODY[state.body],
+      };
+    }
+
+    case 'SET_EXCLUDE_KNOWN':
+      if (action.value === state.excludeKnown) return state;
+      return { ...invalidate(state), excludeKnown: action.value };
+
+    case 'USE_CURATED_REFERENCE':
+      return { ...invalidate(state), pin: null, pinError: null, referenceId: REFERENCE_FOR_BODY[state.body] };
+
+    case 'PIN_REQUEST':
+      return { ...state, pinPending: true, pinError: null, pinSequence: action.seq };
+
+    case 'PIN_SUCCESS':
+      if (action.seq !== state.pinSequence || action.pin.body !== state.body) return state;
+      return { ...invalidate(state), pinPending: false, pin: action.pin, referenceId: action.pin.id, mode: 'global' };
+
+    case 'PIN_FAILURE':
+      if (action.seq !== state.pinSequence) return state;
+      return { ...state, pinPending: false, pinError: action.error };
 
     case 'SET_PROFILE': {
       if (action.profile === state.profile) return state;

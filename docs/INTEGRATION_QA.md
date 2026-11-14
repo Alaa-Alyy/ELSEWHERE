@@ -52,7 +52,23 @@ Last update: 2026-11-14. Real corpus `sha256:f9efd7c592ad8e73bbcab88cb2a2c67cf3e
 | 26 | Real corpus: 243 planned, valid count reported, Pinacate sea windows rejected | 11 SW-corner windows rejected by water guard; manifests list reasons | real-verified |
 | 27 | Real corpus: `data_ready=true`, `demo_mode=false`, DEMO banner absent | `/api/health` + UI | real-verified |
 
+## Discovery mode (real, verified 2026-11-14)
+
+- [x] Global corpus built: 53,288/53,288 parents, **1,143,707 valid windows**, `corpus_version
+  sha256:e483cf61...`, 6,811 s on 13 workers; `earth_windows.npz` 19.9 MB.
+- [x] `/api/health`: `discovery_ready=true`, `global_windows=1143707`, `demo_mode=false`.
+- [x] Mars pin Jezero (18.44N, 77.45E) reproduces the stored reference (relief 723.0 m, variation 4.59 m);
+  MOLA range-read 3-19 s. Moon pins (LDEM_64 local) under 1 s.
+- [x] `/api/discover` over all 1.14 M windows: 0.1-0.4 s; top 5 ≥100 km apart.
+- [x] Browser (real API, no DEMO banner): Mars and Moon globe -> pin -> fingerprint -> "Search all Earth
+  land" -> 5 cards with coordinates and known-analog label; no console errors.
+- [x] Sanity check: a Moon pin at 85S, 0E returns Atacama (#1) and Death Valley (#4) unprompted, both on the
+  well-known analog list; other results are labelled "not in our list", never "discovered".
+- [x] Tests: 85 Python (analysis, backend, integration, discovery) + 22 frontend pass.
+
 ## Open items
+
+- Team / Person 1 to confirm the discovery-mode scope change (`docs/PARALLEL_PLAN.md`).
 
 - Chat runs on Google Gemini (team decision) instead of the brief's gpt-4.1-mini; disclose it.
   `gemini-2.5-flash` is closed to new keys; `gemini-3.8-flash`/`gemini-flash-latest` returned 503/timeouts
