@@ -48,6 +48,24 @@ npm run dev            # http://127.0.0.1:5173
 npm run build; npm run check:bundle; npm run preview   # production check, http://127.0.0.1:4173
 ```
 
+## Discovery mode (pin anywhere, search all Earth land)
+
+- **Pin**: click anywhere on the 3D Mars or Moon globe (or a named place). The backend measures that
+  20 km window with the same pipeline as the vetted references, and the UI shows its terrain fingerprint
+  before any Earth search. Mars: NASA/USGS MOLA 463 m (range-read). Moon: NASA LOLA LDEM_64 (~474 m)
+  and, south of 80.5°S, LOLA LDEM_80S 80 m.
+- **Whole-Earth search**: every Earth land window 56°S-60°N from NASA SRTMGL30 (~1 km), produced by
+  Person 1's parent pipeline on a 90 km lattice; the same fixed distance ranks them; results ≥100 km apart;
+  optional "hide well-known analog sites" (labelling only, never a first-discovery claim).
+- **No training**: it is nearest-neighbour similarity search with a fixed, explainable distance. There are no
+  labelled analog pairs to train on, so nothing is learned and every result is explained metric by metric.
+
+```powershell
+.venv\Scripts\python scripts\fetch_data.py moon-global                             # 531 MB, no login
+$env:EARTHDATA_TOKEN='<token>'; .venv\Scripts\python scripts\fetch_data.py earth-global   # 27 tiles, 267 MB
+.venv\Scripts\python -m discovery.build_global      # ~2 h on 16 cores -> data/processed/global/
+```
+
 ## Demo vs real data
 
 | Mode | Backend | Frontend | Shown as |

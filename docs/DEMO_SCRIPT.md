@@ -1,35 +1,37 @@
-# One-minute demo script (v2.0)
+# One-minute demo script (v2.0 + discovery mode)
 
-Run on the **real corpus** (`data_ready=true`, no DEMO banner). If the real corpus is not ready, say so
-on screen and in words: "This run uses labeled demo data." Never present demo numbers as findings.
+Run on real data (`/api/health`: `data_ready=true`, `discovery_ready=true`, no DEMO banner). If anything is
+demo data, say so on screen and in words. Never present demo numbers as findings.
 
-Setup: backend `DEMO_FIXTURES=false` on :8000; frontend production preview (`npm run build && npm run preview`)
-or dev with `VITE_USE_FIXTURES=false`. Browser full screen, zoom 100 %. Have the backup video ready.
+Setup: backend `DEMO_FIXTURES=false` on :8000; frontend `npm run build && npm run preview` (or dev with
+`VITE_USE_FIXTURES=false`). Full screen, zoom 100 %. Backup video ready. Pre-click Jezero once so the MOLA
+range-read is cached (first Mars pin can take up to ~20 s).
 
 | Time | Screen | Say (adapt, keep the facts) | Do |
 |---|---|---|---|
-| 0:00-0:07 | Intro | "**Exploring other worlds starts with understanding our own.** Before we explore the Moon and Mars, where on Earth can we prepare?" | Let the sentence show, click **Find our next training ground** |
-| 0:07-0:15 | Mission | "We pick a 20 km reference on Mars, near Jezero, measured from NASA MOLA elevation, and what matters for the mission." | Choose **Mars**, keep **General terrain**, click **Search Earth windows** |
-| 0:15-0:25 | Candidates | "We searched 243 planned 20 km windows in three Earth regions at a 1 km grid. These are the closest available windows, at least 20 km apart - a window, not a whole desert." | Point at the scope line, click card #1, let the globe fly to its square |
-| 0:25-0:38 | Tradeoffs | "Why this one and not the alternative? Each bar is weight times distance on a shared scale. Here the selected window is closer on <metric>, the alternative on <metric>." | Read the real explanation lines from the screen |
-| 0:38-0:46 | Slider | "If slope matters more, we move slope priority. The server recomputes the whole corpus." Then say what actually happened: "the top result changed to X" **or** "the top result stayed the same - that is an honest result." | Drag slider to ~0.7, wait for the recompute message |
-| 0:46-0:57 | Decision | "Confirming creates a reproducible decision brief: settings, evidence, sources, and what terrain data cannot tell us - soil, temperature, ice, gravity, radiation." | **Go to decision**, **Confirm my choice**, scroll to limitations and sources |
-| 0:57-1:00 | Close | "A terrain analog to test with, not a field-validated site." | - |
+| 0:00-0:06 | Intro | "**Exploring other worlds starts with understanding our own.** Before we explore the Moon and Mars, where on Earth can we prepare?" | **Find our next training ground** |
+| 0:06-0:18 | Mission: 3D Mars | "This is Mars from NASA MOLA. I can pin any place. Here, Jezero crater. Before searching Earth, we measure its 20 km of terrain: slope classes, relief, local height variation, all at 1 km." | Click **Jezero crater** (or the globe), point at the fingerprint |
+| 0:18-0:28 | Candidates | "Now we search **all Earth land** between 56°S and 60°N with NASA SRTMGL30 - over a million 20 km windows. No trained model: one fixed, explainable distance. These are the closest windows, at least 100 km apart." | **Search all Earth land**; click card #1; globe flies to its square |
+| 0:28-0:36 | Discovery | "This one is not in our list of well-known analog sites. That is not a discovery claim - it is a lead worth checking." | Point at the label; optionally tick **Hide well-known analog sites** |
+| 0:36-0:46 | Tradeoffs | "Why this one and not the alternative? Each bar is weight x distance on a shared scale." Then move slope priority and state the REAL outcome (changed / stayed). | **Compare tradeoffs**, drag slider |
+| 0:46-0:57 | Decision | "Confirming gives a reproducible brief with sources and what terrain can't tell us: soil, temperature, ice, gravity, radiation." | **Go to decision**, **Confirm my choice** |
+| 0:57-1:00 | Close | "A terrain lead to investigate, not a field-validated site." | - |
 
 ## Moon variant
 
-Same flow with **Moon** at Mission: "a 20 km sector near the lunar south pole from NASA LOLA (Barker et al. 2023)."
-Prefer **Slope focus** to show the slope-priority story. Say clearly that this is a prototype comparison
-sector, not an officially selected base location.
+Switch to **Moon**, pin **South pole sector** (LOLA 80 m near the pole) or **Apollo 15 (Hadley Rille)**.
+Say the south-pole sector is a prototype comparison sector, not an officially selected base location.
+
+## Curated variant (30 m data)
+
+Choose **3 curated regions (30 m SRTM)** to show the original high-resolution corpus (Khaybar, Pinacate,
+Death Valley) with the vetted references.
 
 ## If something fails live
 
 | Failure | Say | Do |
 |---|---|---|
-| Map imagery missing | "The imagery service is down; the evidence is unaffected." | continue with cards |
-| Chat unavailable | "The explanation assistant is offline; the decision brief is deterministic and still works." | skip chat |
+| Planet imagery missing | "Imagery service is down; the measurement is unaffected." | use the named-place buttons |
+| Mars pin slow | "We're range-reading the NASA MOLA file for this spot." | wait, or use a cached place |
+| Chat unavailable | "The assistant is offline; the decision brief is deterministic." | skip chat |
 | Backend down | "Switching to our recorded run." | play backup video |
-
-## Optional 15 s chat beat (only if time and key work)
-
-Click **Explain this choice** -> "What can't we infer from terrain data?" -> show that it admits missing dimensions.
