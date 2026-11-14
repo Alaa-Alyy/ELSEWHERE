@@ -3,11 +3,13 @@
 import { ApiError } from './errors.js';
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true';
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+// 'same-origin' = the API is served by the same host as the site (single-container deploy, e.g. Hugging Face).
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const BASE_URL = RAW_BASE === 'same-origin' ? '' : RAW_BASE.replace(/\/+$/, '');
 const TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 15000);
 
 async function request(path, { method = 'GET', query, body, signal, timeoutMs = TIMEOUT_MS } = {}) {
-  const url = new URL(BASE_URL + path);
+  const url = new URL(BASE_URL + path, window.location.origin);   // absolute BASE_URL wins; '' = same origin
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v !== null && v !== undefined && v !== '') url.searchParams.set(k, String(v));
