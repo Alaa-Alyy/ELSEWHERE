@@ -14,7 +14,9 @@ RUN cd frontend && VITE_USE_FIXTURES=false VITE_API_BASE_URL=same-origin npm run
 
 # ---------- 2) API + NASA data
 FROM python:3.12-slim
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+# libexpat1: required by the rasterio 1.5 wheel (bundled GDAL) - without it `import rasterio` fails and
+# Mars / lunar south-pole pins report "elevation source unavailable: ImportError".
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libexpat1 \
  && rm -rf /var/lib/apt/lists/* && useradd -m -u 1000 user
 WORKDIR /app
 COPY analysis/requirements.txt analysis/requirements.txt
