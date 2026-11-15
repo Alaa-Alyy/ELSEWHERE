@@ -1,66 +1,60 @@
-# Deploy ELSEWHERE on Hugging Face Spaces (free)
+# Deploy ELSEWHERE on Render (free)
 
-One container serves the website **and** the API at `https://<your-username>-elsewhere.hf.space`.
-The Space holds only two files (`deploy/huggingface/Dockerfile` and `deploy/huggingface/README.md`);
-at build time it clones this GitHub repo (**branch `main`**), builds the site and downloads NASA data.
+One container serves the website **and** the API at `https://<name>.onrender.com`, built from the
+`Dockerfile` in the repository root. (Hugging Face Docker Spaces became a paid feature, so we use Render;
+the old Space files remain in `deploy/huggingface/`.)
+
+Render free web services: 750 free hours per month, **spin down after 15 minutes without visitors** and
+take about a minute to wake up; the filesystem is ephemeral (fine: all data is inside the image).
+Our service uses about 300 MB of memory, about 350 MB at the peak of a search.
 
 ## 0. Before you start
 
-- Merge the `deploy-hf` pull request into `main` (the Space builds from `main`).
-- The GitHub repo must stay **public**.
-- Never put keys in Git or in the Dockerfile. They go in the Space's **secrets** only.
+- Merge the `render-deploy` pull request into `main` (Render builds `main`).
+- Never put keys in Git or in the Dockerfile. They go in Render's environment settings only.
 
-## 1. Account and Space
+## 1. Create the service
 
-1. Create a free account at https://huggingface.co/join and confirm your e-mail.
-2. Open https://huggingface.co/new-space
-   - **Space name:** `elsewhere`
-   - **SDK:** Docker → **Blank**
-   - **Hardware:** CPU basic (free)
-   - **Visibility:** Public
-   - Click **Create Space**.
+1. Go to https://render.com → **Get Started** → sign up **with GitHub**.
+2. Dashboard → **New** → **Web Service** → choose the repository **Alaa-Alyy/ELSEWHERE**
+   (or paste the public URL https://github.com/Alaa-Alyy/ELSEWHERE).
+3. Settings:
+   - **Name:** `elsewhere` (the link becomes `https://elsewhere-....onrender.com`)
+   - **Branch:** `main`
+   - **Language / Runtime:** **Docker** (Dockerfile path `./Dockerfile`)
+   - **Region:** Frankfurt (closest to Egypt)
+   - **Instance type:** **Free**
+4. **Environment variables** → Add:
+   - `GEMINI_API_KEY` = your Google AI Studio key (the one in your local `backend/.env`) - optional, chat.
+5. **Secret files** (Advanced) → Add secret file:
+   - Filename `EARTHDATA_TOKEN`, contents = a fresh token from https://urs.earthdata.nasa.gov →
+     *Generate Token* - optional, Earth side of the 3D terrain view. Tokens expire after ~60 days.
+6. **Health check path** (Advanced): `/api/health`
+7. **Create Web Service**. The first build takes about 10-20 minutes (it downloads 0.5-0.8 GB of NASA data).
 
-## 2. Secrets (Space → Settings → Variables and secrets → New secret)
+## 2. Check it
 
-| Name | Value | Needed for |
-|---|---|---|
-| `GEMINI_API_KEY` | your Google AI Studio key (the one in your local `backend/.env`) | chat explanations (optional) |
-| `EARTHDATA_TOKEN` | a fresh token from https://urs.earthdata.nasa.gov → *Generate Token* (tokens expire after ~60 days) | Earth side of the 3D terrain view (optional) |
+- `https://<name>.onrender.com` - the space hub with the astronaut, **no DEMO banner**.
+- `https://<name>.onrender.com/api/health` - `"data_ready": true`, `"discovery_ready": true`,
+  `"global_windows": 1143707`, `"chat_available": true` (if the Gemini key is set).
 
-Without them the site still works: chat shows "unavailable" and the Earth 3D view says "unavailable".
-Anyone using the public site spends your Gemini quota; that is normal for a demo.
+## 3. Updates
 
-## 3. Upload the two files (no git needed)
+Render redeploys automatically on every push/merge to `main` (Auto-Deploy on by default).
 
-Space page → **Files** → **Add file → Upload files** → drag in
-`deploy/huggingface/Dockerfile` and `deploy/huggingface/README.md` (replace the default README) →
-**Commit changes to main**.
+## 4. On judging day
 
-## 4. Wait for the build (~15 min the first time)
+- Open the link 5-10 minutes before the judges (free services sleep after 15 minutes).
+- Mars pins and the lunar south pole read NASA servers live; pin your demo places (e.g. Jezero) once
+  beforehand so they are cached in the running service.
+- Put the link in the submission and test it from another device or a private window.
 
-The Space shows **Building** (see the *Logs* tab), then **Running**. Then check:
-
-- `https://<username>-elsewhere.hf.space` - the space hub with the astronaut opens, **no DEMO banner**.
-- `https://<username>-elsewhere.hf.space/api/health` - `"data_ready": true`, `"discovery_ready": true`,
-  `"global_windows": 1143707` (and `"chat_available": true` if you set the Gemini key).
-
-## 5. Updating after new changes
-
-Merge to `main` on GitHub, then in the Space: **Settings → Factory rebuild** (it clones `main` again).
-
-## 6. On judging day
-
-- Free Spaces **sleep** after a period without visitors; the first visit then takes about a minute.
-  Open the link 5-10 minutes before the judges do.
-- Mars pins and the lunar south pole read NASA servers live. Pin your demo places (e.g. Jezero) once
-  before the demo so they are cached in the running Space.
-- Put the link in the submission form and test it from another device / a private window.
-
-## Troubleshooting
+## Troubleshooting (Logs tab)
 
 | Symptom | Fix |
 |---|---|
-| Build fails at `earth-global` | `EARTHDATA_TOKEN` expired or wrong: generate a new one, update the secret, Factory rebuild |
-| Build fails at `moon-global` | NASA PDS was slow: Factory rebuild |
+| Build fails at `earth-global` | Earthdata token expired/wrong: update the secret file, *Manual Deploy → Clear build cache & deploy* |
+| Build fails at `moon-global` | NASA PDS was slow: *Manual Deploy* again |
+| "Out of memory" / restarts | Free instance too small: tell the team; the paid Starter instance fixes it |
 | "Could not measure this pin" | NASA server temporarily unreachable: retry; Moon sites outside the south pole work offline |
 | Chat unavailable | `GEMINI_API_KEY` missing or quota reached |

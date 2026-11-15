@@ -1,0 +1,16 @@
+# Never send secrets, raw rasters, builds or local environments into the image.
+.git
+.venv
+**/node_modules
+**/__pycache__
+.pytest_cache
+frontend/dist
+data/raw
+data/processed/global_build.*
+data/processed/*.log
+*.zip
+**/.env
+**/.env.*
+!frontend/.env.example
+docs
+deploy

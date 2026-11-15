@@ -28,10 +28,20 @@ class GlobalUnavailable(RuntimeError):
     pass
 
 
+SLOPE_CHUNK = 131072   # rows per block: keeps the temporary (rows x 8) arrays ~8 MB instead of ~146 MB
+
+
 def vector_distances(hist: np.ndarray, relief: np.ndarray, variation: np.ndarray, q: np.ndarray):
-    """Component distances of every row to query vector q (8 hist, relief, variation)."""
+    """Component distances of every row to query vector q (8 hist, relief, variation).
+
+    The slope term is computed in row blocks to bound peak memory (small free hosting instances);
+    each row's arithmetic is unchanged, so results are bit-identical to the one-shot version.
+    """
     f = C.STABILIZATION_FLOOR_M
-    d_slope = 0.5 * np.abs(hist - q[:8]).sum(axis=1)
+    n = hist.shape[0]
+    d_slope = np.empty(n, dtype=np.float64)
+    for s in range(0, n, SLOPE_CHUNK):
+        d_slope[s:s + SLOPE_CHUNK] = 0.5 * np.abs(hist[s:s + SLOPE_CHUNK] - q[:8]).sum(axis=1)
     d_relief = np.abs(relief - q[8]) / np.maximum(np.maximum(np.abs(relief), abs(q[8])), f)
     d_var = np.abs(variation - q[9]) / np.maximum(np.maximum(np.abs(variation), abs(q[9])), f)
     return d_slope, d_relief, d_var
