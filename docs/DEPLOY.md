@@ -1,60 +1,50 @@
-# Deploy ELSEWHERE on Render (free)
+# Deploy ELSEWHERE (one container: website + API)
 
-One container serves the website **and** the API at `https://<name>.onrender.com`, built from the
-`Dockerfile` in the repository root. (Hugging Face Docker Spaces became a paid feature, so we use Render;
-the old Space files remain in `deploy/huggingface/`.)
+The root `Dockerfile` builds everything; the service listens on `$PORT`. Keys never go in Git or the
+Dockerfile - only in the host's variables. Our service uses ~300 MB of memory (~350 MB at a search peak).
 
-Render free web services: 750 free hours per month, **spin down after 15 minutes without visitors** and
-take about a minute to wake up; the filesystem is ephemeral (fine: all data is inside the image).
-Our service uses about 300 MB of memory, about 350 MB at the peak of a search.
+## Railway (free trial, no card) - what we use
 
-## 0. Before you start
+Railway's free trial: $5 credit for 30 days, **no credit card**, up to 1 GB memory per service.
+After 30 days (or when the credit is spent) the free plan is much smaller and the service will likely stop.
+Unverified trial accounts have restricted outbound network: **verify the account with GitHub**, otherwise
+the server cannot read NASA data (Mars pins, climate).
 
-- Merge the `render-deploy` pull request into `main` (Render builds `main`).
-- Never put keys in Git or in the Dockerfile. They go in Render's environment settings only.
+1. Go to https://railway.com → **Login with GitHub**. Accept the trial; complete the GitHub verification
+   if Railway asks (needed for outbound internet).
+2. **New Project** → **Deploy from GitHub repo** → choose **Alaa-Alyy/ELSEWHERE** (branch `main`).
+   Railway finds `railway.json` + `Dockerfile` by itself (Docker build, health check `/api/health`).
+3. Open the service → **Variables** → **New Variable**:
+   - `GEMINI_API_KEY` = your Google AI Studio key - optional (chat). Use a fresh key, never a key that was
+     ever pasted in a chat.
+   - `EARTHDATA_TOKEN` = a fresh token from https://urs.earthdata.nasa.gov → *Generate Token* - optional
+     (Earth side of the 3D terrain view). Railway passes it to the build.
+4. **Settings → Networking → Generate Domain** → you get `https://<something>.up.railway.app`.
+5. Wait for the deploy to finish (**Deployments** tab; first build ~10-20 min).
+6. Check `https://<domain>/api/health` → `"data_ready": true`, `"discovery_ready": true`,
+   `"global_windows": 1143707`; then open `https://<domain>` (space hub, no DEMO banner).
 
-## 1. Create the service
+Updates: every push/merge to `main` redeploys automatically.
 
-1. Go to https://render.com → **Get Started** → sign up **with GitHub**.
-2. Dashboard → **New** → **Web Service** → choose the repository **Alaa-Alyy/ELSEWHERE**
-   (or paste the public URL https://github.com/Alaa-Alyy/ELSEWHERE).
-3. Settings:
-   - **Name:** `elsewhere` (the link becomes `https://elsewhere-....onrender.com`)
-   - **Branch:** `main`
-   - **Language / Runtime:** **Docker** (Dockerfile path `./Dockerfile`)
-   - **Region:** Frankfurt (closest to Egypt)
-   - **Instance type:** **Free**
-4. **Environment variables** → Add:
-   - `GEMINI_API_KEY` = your Google AI Studio key (the one in your local `backend/.env`) - optional, chat.
-5. **Secret files** (Advanced) → Add secret file:
-   - Filename `EARTHDATA_TOKEN`, contents = a fresh token from https://urs.earthdata.nasa.gov →
-     *Generate Token* - optional, Earth side of the 3D terrain view. Tokens expire after ~60 days.
-6. **Health check path** (Advanced): `/api/health`
-7. **Create Web Service**. The first build takes about 10-20 minutes (it downloads 0.5-0.8 GB of NASA data).
+## Render (needs a card on file) - alternative
 
-## 2. Check it
+New → Web Service → repo `Alaa-Alyy/ELSEWHERE`, branch `main`, Language **Docker**, Dockerfile `./Dockerfile`,
+Instance **Free**, Health check `/api/health`, env var `GEMINI_API_KEY`, optional secret file `EARTHDATA_TOKEN`.
+Free services sleep after 15 minutes without visitors (~1 minute to wake).
 
-- `https://<name>.onrender.com` - the space hub with the astronaut, **no DEMO banner**.
-- `https://<name>.onrender.com/api/health` - `"data_ready": true`, `"discovery_ready": true`,
-  `"global_windows": 1143707`, `"chat_available": true` (if the Gemini key is set).
+## On judging day
 
-## 3. Updates
-
-Render redeploys automatically on every push/merge to `main` (Auto-Deploy on by default).
-
-## 4. On judging day
-
-- Open the link 5-10 minutes before the judges (free services sleep after 15 minutes).
-- Mars pins and the lunar south pole read NASA servers live; pin your demo places (e.g. Jezero) once
+- Open the link a few minutes before the judges.
+- Mars pins and the lunar south pole read NASA servers live: pin your demo places (e.g. Jezero) once
   beforehand so they are cached in the running service.
-- Put the link in the submission and test it from another device or a private window.
+- Test the link from another device or a private window.
 
-## Troubleshooting (Logs tab)
+## Troubleshooting (deploy logs)
 
 | Symptom | Fix |
 |---|---|
-| Build fails at `earth-global` | Earthdata token expired/wrong: update the secret file, *Manual Deploy → Clear build cache & deploy* |
-| Build fails at `moon-global` | NASA PDS was slow: *Manual Deploy* again |
-| "Out of memory" / restarts | Free instance too small: tell the team; the paid Starter instance fixes it |
-| "Could not measure this pin" | NASA server temporarily unreachable: retry; Moon sites outside the south pole work offline |
-| Chat unavailable | `GEMINI_API_KEY` missing or quota reached |
+| Build fails at `earth-global` | Earthdata token expired/wrong: update the variable and redeploy (or remove it) |
+| Build fails at `moon-global` | NASA PDS was slow: redeploy |
+| "Could not measure this pin" / climate unavailable | outbound network blocked (verify the Railway account) or NASA temporarily down |
+| Out of memory / restarts | instance too small: needs ≥ 512 MB |
+| Chat unavailable | `GEMINI_API_KEY` missing, wrong or out of quota |

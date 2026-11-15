@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-# ELSEWHERE - one container: the website + the API, on $PORT (Render: 10000 by default).
+# ELSEWHERE - one container: the website + the API, on $PORT (set by Railway / Render; 10000 if unset).
 # Build context = this repository. Secrets are never baked in:
 #   GEMINI_API_KEY   runtime environment variable (optional, chat)
 #   EARTHDATA_TOKEN  build-time SECRET FILE named EARTHDATA_TOKEN (optional, Earth side of the 3D view)
@@ -32,13 +32,17 @@ COPY data/config data/config
 
 # Moon LOLA LDEM_64 (531 MB, no login): Moon pins outside the south polar cap.
 RUN python scripts/fetch_data.py moon-global
-# Earth SRTMGL30 (267 MB, Earthdata token as a build secret file): Earth side of the 3D terrain view.
+# Earth SRTMGL30 (267 MB, Earthdata token): Earth side of the 3D terrain view. Optional.
+# Render passes it as a build secret file; Railway passes service variables as build args.
+ARG EARTHDATA_TOKEN=""
 RUN --mount=type=secret,id=EARTHDATA_TOKEN,mode=0444,required=false \
-    if [ -s /run/secrets/EARTHDATA_TOKEN ]; then \
-      EARTHDATA_TOKEN="$(cat /run/secrets/EARTHDATA_TOKEN)" python scripts/fetch_data.py earth-global \
+    TOKEN="$(cat /run/secrets/EARTHDATA_TOKEN 2>/dev/null || true)"; \
+    [ -n "$TOKEN" ] || TOKEN="$EARTHDATA_TOKEN"; \
+    if [ -n "$TOKEN" ]; then \
+      EARTHDATA_TOKEN="$TOKEN" python scripts/fetch_data.py earth-global \
       && python -c "from discovery.sources import extract_srtmgl30; extract_srtmgl30()" \
       && rm -f data/raw/earth/global/*.zip; \
-    else echo "No EARTHDATA_TOKEN secret: the Earth 3D terrain view will say 'unavailable'"; fi
+    else echo "No EARTHDATA_TOKEN: the Earth 3D terrain view will say 'unavailable'"; fi
 
 COPY --from=web /src/frontend/dist /app/site
 RUN chown -R user:user /app
