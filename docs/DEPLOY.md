@@ -17,8 +17,8 @@ the server cannot read NASA data (Mars pins, climate).
 3. Open the service → **Variables** → **New Variable**:
    - `GEMINI_API_KEY` = your Google AI Studio key - optional (chat). Use a fresh key, never a key that was
      ever pasted in a chat.
-   - `EARTHDATA_TOKEN` = a fresh token from https://urs.earthdata.nasa.gov → *Generate Token* - optional
-     (Earth side of the 3D terrain view). Railway passes it to the build.
+   - (No Earthdata token: Railway rejects secrets in Docker builds, so online the Earth side of the 3D
+     terrain view says "unavailable". Everything else works; the full 3D works locally.)
 4. **Settings → Networking → Generate Domain** → you get `https://<something>.up.railway.app`.
 5. Wait for the deploy to finish (**Deployments** tab; first build ~10-20 min).
 6. Check `https://<domain>/api/health` → `"data_ready": true`, `"discovery_ready": true`,
@@ -43,7 +43,7 @@ Free services sleep after 15 minutes without visitors (~1 minute to wake).
 
 | Symptom | Fix |
 |---|---|
-| Build fails at `earth-global` | Earthdata token expired/wrong: update the variable and redeploy (or remove it) |
+| "The Dockerfile failed validation" | Railway runs Docker build checks: no secrets in ARG/ENV or secret mounts (`docker build --check .` locally) |
 | Build fails at `moon-global` | NASA PDS was slow: redeploy |
 | "Could not measure this pin" / climate unavailable | outbound network blocked (verify the Railway account) or NASA temporarily down |
 | Out of memory / restarts | instance too small: needs ≥ 512 MB |
