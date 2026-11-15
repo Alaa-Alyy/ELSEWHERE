@@ -31,3 +31,5 @@ Thumbs.db
 
 # global build logs
 data/processed/global_build.*
+
+data/processed/*.log
