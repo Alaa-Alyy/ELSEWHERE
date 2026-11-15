@@ -14,7 +14,7 @@ import numpy as np
 from analysis import config as C
 from analysis import preprocess as P
 
-from .sources import PIN_LAT_LIMIT, SourceUnavailable, earth_mosaic, pin_source
+from .sources import PIN_LAT_LIMIT, SourceUnavailable, earth_mosaic, ensure_earth_tiles, pin_source
 
 _CACHE: dict[tuple, dict] = {}
 _LOCK = threading.Lock()
@@ -43,6 +43,7 @@ def elevation_grid(body: str, lat: float, lon: float) -> dict:
     half = grid.half_extent_m + 3000.0
     try:
         if body == "earth":
+            ensure_earth_tiles(lat, lon, half)          # no-op locally; on-demand download when deployed
             src, source_id = earth_mosaic().crop(lat, lon, half), "earth-srtmgl30"
         else:
             src, source_id = pin_source(body, lat, lon, half)

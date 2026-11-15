@@ -17,8 +17,10 @@ the server cannot read NASA data (Mars pins, climate).
 3. Open the service → **Variables** → **New Variable**:
    - `GEMINI_API_KEY` = your Google AI Studio key - optional (chat). Use a fresh key, never a key that was
      ever pasted in a chat.
-   - (No Earthdata token: Railway rejects secrets in Docker builds, so online the Earth side of the 3D
-     terrain view says "unavailable". Everything else works; the full 3D works locally.)
+   - `EARTHDATA_TOKEN` = a fresh token from https://urs.earthdata.nasa.gov → *Generate Token* - for the
+     Earth side of the 3D terrain view. It is a RUNTIME variable (never part of the build): the running
+     server downloads only the NASA SRTMGL30 tile a 3D view needs (8-24 MB, a few seconds the first time),
+     then reuses it. Tokens expire after ~60 days; without it, only the Earth 3D side says "unavailable".
 4. **Settings → Networking → Generate Domain** → you get `https://<something>.up.railway.app`.
 5. Wait for the deploy to finish (**Deployments** tab; first build ~10-20 min).
 6. Check `https://<domain>/api/health` → `"data_ready": true`, `"discovery_ready": true`,

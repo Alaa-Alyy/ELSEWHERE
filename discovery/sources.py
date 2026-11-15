@@ -12,6 +12,8 @@ from __future__ import annotations
 import math
 import os
 import re
+import threading
+import urllib.request
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -131,6 +133,109 @@ class EarthMosaic:
         gt = (c_lo * self.PX - 180.0, self.PX, 0.0, 90.0 - r_lo * self.PX, 0.0, -self.PX)
         return P.RasterSource(name=f"SRTMGL30 crop {lat:.3f},{lon:.3f}", elevation_m=z, valid=valid,
                               geotransform=gt, native_crs=wrap_crs("earth", lon))
+
+
+# ----------------------------------------------------------------------------- SRTMGL30 on demand
+# Deployed containers do not ship the 27 Earth tiles (their download needs an Earthdata token, which must
+# not be baked into an image). When a window needs a missing tile, it is downloaded once at RUNTIME with
+# the EARTHDATA_TOKEN environment variable, extracted, and the mosaic is reloaded. Locally (all tiles
+# already extracted) nothing happens. The measurement code is unchanged.
+SRTM30_URL = "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL30.002/{g}/{g}.zip"
+# Exact CMR granule titles (case matters on the server; one is upper-case).
+SRTMGL30_GRANULES = tuple(f"{t}.SRTMGL30.dem" for t in (
+    "e020n40", "e020n90", "e020s10", "e060n40", "e060n90", "e060s10", "e100n40", "e100n90", "e100s10",
+    "e140n40", "e140n90", "e140s10", "W020N40", "w020n90", "w020s10", "w060n40", "w060n90", "w060s10",
+    "w100n40", "w100n90", "w100s10", "w140n40", "w140n90", "w140s10", "w180n40", "w180n90", "w180s10"))
+GRANULE_BY_TILE = {g.split(".")[0].lower(): g for g in SRTMGL30_GRANULES}
+MAX_ONDEMAND_TILES = 10            # ~58 MB each extracted; oldest on-demand tiles are evicted
+_TILE_LOCK = threading.Lock()
+_ONDEMAND: list[str] = []          # tiles fetched by this process, oldest first
+
+
+def srtmgl30_tile(lat: float, lon: float) -> str | None:
+    """GTOPO30-style tile name (upper-left corner) holding the point, e.g. 'e020n40'; None outside 60S-90N."""
+    lon = ((lon + 180.0) % 360.0) - 180.0
+    if lat < -60.0 or lat > 90.0:
+        return None
+    ulx = -180 + 40 * int(math.floor((lon + 180.0) / 40.0))
+    uly = 90 if lat >= 40.0 else 40 if lat >= -10.0 else -10
+    return f"{'e' if ulx >= 0 else 'w'}{abs(ulx):03d}{'n' if uly >= 0 else 's'}{abs(uly):02d}"
+
+
+def tiles_for(lat: float, lon: float, half_m: float) -> set[str]:
+    dlat, dlon = half_extent_deg("earth", lat, half_m)
+    names = {srtmgl30_tile(la, lo) for la in (lat - dlat, lat, lat + dlat) for lo in (lon - dlon, lon, lon + dlon)}
+    return {n for n in names if n}
+
+
+def _download_zip(url: str, out: Path, token: str, timeout: float = 180.0) -> None:
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    tmp = out.with_suffix(out.suffix + ".part")
+    with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 (fixed NASA https host)
+        if "html" in r.headers.get("Content-Type", ""):
+            raise SourceUnavailable("Earthdata returned a web page: token missing, wrong or expired")
+        with open(tmp, "wb") as f:
+            while chunk := r.read(1 << 20):
+                f.write(chunk)
+    with zipfile.ZipFile(tmp) as z:
+        if z.testzip() is not None:
+            raise SourceUnavailable("corrupt SRTMGL30 download")
+    tmp.replace(out)
+
+
+def ensure_earth_tiles(lat: float, lon: float, half_m: float, src_dir: Path = EARTH_DIR,
+                       token: str | None = None, fetch=_download_zip) -> bool:
+    """Make sure the SRTMGL30 tiles covering the crop exist; returns True if any tile was added."""
+    dem_dir = src_dir / "dem"
+    need = tiles_for(lat, lon, half_m)
+    with _TILE_LOCK:
+        dem_dir.mkdir(parents=True, exist_ok=True)
+        have = {p.stem.lower() for p in dem_dir.iterdir() if p.suffix.lower() == ".dem"}
+        missing = sorted(need - have)
+        if not missing:
+            return False
+        token = token if token is not None else os.environ.get("EARTHDATA_TOKEN", "")
+        for t in missing:
+            local = next((z for z in src_dir.glob("*.zip") if z.name.lower().startswith(t + ".")), None)
+            downloaded = False
+            if local is None:
+                if not token:
+                    raise SourceUnavailable(f"Earth elevation tile {t} is not available on this server "
+                                            "(set EARTHDATA_TOKEN to fetch NASA SRTMGL30 on demand)")
+                g = GRANULE_BY_TILE.get(t)
+                if g is None:
+                    raise SourceUnavailable(f"no SRTMGL30 tile covers {t}")
+                local = src_dir / f"{g}.zip"
+                try:
+                    fetch(SRTM30_URL.format(g=g), local, token)
+                except SourceUnavailable:
+                    raise
+                except Exception as exc:  # network / HTTP errors
+                    raise SourceUnavailable(f"NASA SRTMGL30 download failed: {type(exc).__name__}") from exc
+                downloaded = True
+            with zipfile.ZipFile(local) as zf:
+                for n in zf.namelist():
+                    if n.lower().endswith((".dem", ".hdr")) and zf.getinfo(n).file_size > 0:
+                        with zf.open(n) as fi, open(dem_dir / Path(n).name, "wb") as fo:
+                            while chunk := fi.read(1 << 20):
+                                fo.write(chunk)
+            if downloaded:
+                local.unlink(missing_ok=True)
+                _ONDEMAND.append(t)
+        # keep the on-demand cache bounded (never touches tiles prepared offline)
+        while len(_ONDEMAND) > MAX_ONDEMAND_TILES:
+            old = next((x for x in _ONDEMAND if x not in need), None)
+            if old is None:
+                break
+            _ONDEMAND.remove(old)
+            for p in dem_dir.iterdir():
+                if p.stem.lower() == old:
+                    try:
+                        p.unlink(missing_ok=True)
+                    except OSError:  # still memory-mapped (Windows): leave it, harmless
+                        pass
+    earth_mosaic.cache_clear()
+    return True
 
 
 # ----------------------------------------------------------------------------- Moon LDEM_64

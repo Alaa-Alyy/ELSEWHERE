@@ -1,7 +1,7 @@
 # ELSEWHERE - one container: the website + the API, on $PORT (set by Railway / Render; 10000 if unset).
 # Build context = this repository. Secrets are never baked in:
 #   GEMINI_API_KEY   runtime environment variable (optional, chat)
-#   (no build-time secrets; see the note above the data downloads)
+#   EARTHDATA_TOKEN  runtime environment variable (optional, Earth side of the 3D view; tiles fetched on demand)
 
 # ---------- 1) website (real API on the same origin, no demo fixtures)
 FROM node:24-slim AS web
@@ -31,10 +31,10 @@ COPY data/config data/config
 
 # Moon LOLA LDEM_64 (531 MB, no login): Moon pins outside the south polar cap.
 RUN python scripts/fetch_data.py moon-global
-# Earth SRTMGL30 tiles need an Earthdata login token. Passing a token into a Docker build (ARG or
-# secret mount) is rejected by Railway's Dockerfile validation (rule SecretsUsedInArgOrEnv), so the
-# deployed image skips them: the Earth side of the 3D terrain view reports "unavailable" online.
-# Everything else (global search, pins, climate, imagery, Mars/Moon 3D side) works.
+# Earth SRTMGL30 tiles need an Earthdata login token, which must never go into a Docker build (Railway
+# rejects ARG/secret mounts: rule SecretsUsedInArgOrEnv). Instead the RUNNING server downloads only the
+# tile a 3D view needs, once, using the EARTHDATA_TOKEN runtime variable (discovery/sources.py).
+RUN mkdir -p data/raw/earth/global/dem
 
 COPY --from=web /src/frontend/dist /app/site
 RUN chown -R user:user /app
