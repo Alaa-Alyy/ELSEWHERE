@@ -18,6 +18,10 @@
   NASA Space Apps 2026 · <i>Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars</i>
 </p>
 
+<p align="center">
+  <img src="assets/planets.svg" width="1000" alt="Rotating Mars and Moon" />
+</p>
+
 ---
 
 ## 📑 Contents
